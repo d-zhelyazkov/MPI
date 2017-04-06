@@ -18,5 +18,11 @@
     <ClCompile Include="traffic_serial.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="traffic_parallel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="traffic_parallel_1DCart.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

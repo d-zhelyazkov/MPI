@@ -11,10 +11,11 @@
 char* STREET;
 int N;
 int THREADS, rank;
+MPI_Comm COMM;
 
-#define send(byte, dest) MPI_Send(&byte, 1, MPI_BYTE, dest, 0, MPI_COMM_WORLD)
-#define recv(byte, source) MPI_Recv(&byte, 1, MPI_BYTE, source, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE)
-//#define sendStreet() MPI_Send(&STREET[1], N, MPI_CHAR, 0, 0, MPI_COMM_WORLD)
+#define send(byte, dest) MPI_Send(&byte, 1, MPI_BYTE, dest, 0, COMM)
+#define recv(byte, source) MPI_Recv(&byte, 1, MPI_BYTE, source, 0, COMM, MPI_STATUS_IGNORE)
+#define sendStreet() MPI_Send(&STREET[1], N, MPI_CHAR, 0, 0, COMM)
 
 
 char* syncWholeStreet();
@@ -26,19 +27,22 @@ int main(int argc, char **argv)
 
     /* Get communicator size */
     MPI_Comm_size(MPI_COMM_WORLD, &THREADS);
+
+    int dims[] = { THREADS };
+    int periods[] = { true };
+    MPI_Cart_create(MPI_COMM_WORLD, 1, dims, periods, true, &COMM);
+
     /* Get process rank in the world communicator */
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_rank(COMM, &rank);
 
     /* Calculate neighboring ranks */
-    int nrank = (rank + 1) % THREADS;
-    int prank = (rank - 1 + THREADS) % THREADS;
+    int prank, nrank;
+    MPI_Cart_shift(COMM, 0, 1, &prank, &nrank);
 
     //Calculating current street size
     N = STREET_SIZE / THREADS;
     if (rank < STREET_SIZE % THREADS)
         N++;
-    
-    printf("P%d, N:%d\n", rank, N);
 
     //Populating the street
     STREET = new char[N + 2];
@@ -51,10 +55,13 @@ int main(int argc, char **argv)
     char* newstr = new char[N + 2];
     for (int i = 1; i <= ITERATIONS; i++) {
         //printing the whole street
-        char* wholeStreet = syncWholeStreet();
-        if (wholeStreet) {
+        if (!rank) {
+            char* wholeStreet = syncWholeStreet();
             printf("\n%s\n", wholeStreet);
             delete[] wholeStreet;
+        }
+        else {
+            sendStreet();
         }
 
         //syncronizing data
@@ -78,15 +85,16 @@ int main(int argc, char **argv)
             newstr[j] = (STREET[j] == SPACE) ? STREET[j - 1] : STREET[j + 1];
         }
         memcpy(STREET, newstr, (N + 2) * sizeof(char));
-                
+
     }
 
     //gathering statistics
-    char* wholeStreet = syncWholeStreet();
-    if (wholeStreet) {
+    if (!rank) {
+        char* wholeStreet = syncWholeStreet();
         printf("\n%s\n", wholeStreet);
 
-        int cars, v;
+        int cars = 0;
+        int v = 0;
         for (int i = 0; i < STREET_SIZE; i++) {
             if (wholeStreet[i] != CAR)
                 continue;
@@ -99,10 +107,13 @@ int main(int argc, char **argv)
 
         printf("\nNumber of cars = %3d   Fill ratio = %7.2f  Estimated speed = %7.2f\n",
             cars,
-            (float)cars/ STREET_SIZE,
+            (float)cars / STREET_SIZE,
             (float)v / (2 * cars));
 
         delete[] wholeStreet;
+    }
+    else {
+        sendStreet();
     }
 
 
@@ -112,36 +123,17 @@ int main(int argc, char **argv)
 }
 
 char* syncWholeStreet() {
-    
     char* wholeStreet = new char[STREET_SIZE + 1];
+    memcpy(wholeStreet, STREET, N * sizeof(char));
+    int currentIt = N;
 
-    int* counts = new int[THREADS];
-    int* offsets = new int[THREADS];
-
-    if (!rank) {
-        int currOffset = 0;
-        int reminders = STREET_SIZE % THREADS;
-        for (int i = 0; i < THREADS; i++) {
-            int size = (!reminders || i < reminders) ? N : N - 1;
-            counts[i] = size;
-            offsets[i] = currOffset;
-            //printf("%d\tcount: %d\toffset: %d\n", i, size, currOffset);
-            currOffset += size;
-        }
-
-        memcpy(wholeStreet, STREET, N * sizeof(char));
-        MPI_Gatherv(MPI_IN_PLACE, N, MPI_CHAR, wholeStreet, counts, offsets, MPI_CHAR, 0, MPI_COMM_WORLD);
-        wholeStreet[STREET_SIZE] = 0;
-    }
-    else {
-        MPI_Gatherv(&STREET[1], N, MPI_CHAR, wholeStreet, counts, offsets, MPI_CHAR, 0, MPI_COMM_WORLD);
-
-        delete[] wholeStreet;
-        wholeStreet = NULL;
+    int reminders = STREET_SIZE % THREADS;
+    for (int thread = 1; thread < THREADS; thread++) {
+        int streetSize = (thread < reminders) ? N : N - 1;
+        MPI_Recv(&wholeStreet[currentIt], streetSize, MPI_CHAR, thread, 0, COMM, MPI_STATUS_IGNORE);
+        currentIt += streetSize;
     }
 
-    delete[] counts;
-    delete[] offsets;
-
+    wholeStreet[STREET_SIZE] = 0;
     return wholeStreet;
 }
