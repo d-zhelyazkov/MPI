@@ -143,9 +143,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="MainTrafficProcess.cpp" />
+    <ClCompile Include="SlaveTrafficProcess.cpp" />
+    <ClCompile Include="TrafficProcess.cpp" />
     <ClCompile Include="traffic_parallel.cpp" />
     <ClCompile Include="traffic_parallel_1DCart.cpp" />
     <ClCompile Include="traffic_serial.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="MainTrafficProcess.h" />
+    <ClInclude Include="SlaveTrafficProcess.h" />
+    <ClInclude Include="TrafficProcess.h" />
+    <ClInclude Include="TrafficProcessFactory.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

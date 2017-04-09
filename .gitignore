@@ -253,3 +253,9 @@ paket-files/
 *.out
 *.o
 *.cproject
+/traffic/.project
+/traffic/.settings/language.settings.xml
+/traffic/.settings/org.eclipse.cdt.managedbuilder.core.prefs
+/traffic/traffic
+/traffic/traffic_serial
+/img_reconstruct/ImageReconC.tar.bz2
