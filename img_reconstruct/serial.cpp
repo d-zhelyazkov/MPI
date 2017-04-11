@@ -5,48 +5,46 @@
 #define ITERATIONS 5000
 #define THRESH 255
 
+#define NEIHBOURHOOD_SIZE 4
+const char NEIHBOURHOOD[][2] = { {1,0},{ -1,0 },{ 0,1 },{ 0,-1 } };
+
 void enchance(Matrix<float>& img);
 
 int main (int argc, char **argv)
 {
-
-   int i,j,k;
+    int i,j,k;
   
-   Matrix<float>& buf = *datread("edge239x432.dat");
-   int m = buf.rows();
-   int n = buf.cols();
-   Matrix<float> im(m + 2, n + 2);
-   Matrix<float> old(m + 2, n + 2);
-   Matrix<float> newIm(m + 2, n + 2);
+    Matrix<float>& img = *datread("edge239x432.dat");
+    Matrix<float> old(img);
+    int m = img.rows();
+    int n = img.cols();
+    Matrix<float> newIm(m, n);
 
-   for (i = 1; i <= m; i++)
-     for (j = 1; j <= n; j++)
-       {
-	  im(i, j) = old(i, j) = buf(i-1,j-1);
-       }
+    for (k = 1; k <= ITERATIONS; k++) {
+        for (i = 0; i < m; i++) {
+            for (j = 0; j < n; j++)
+            {
+                float x = img(i, j);
+                for (int l = 0; l < NEIHBOURHOOD_SIZE; l++) {
+                    float ci = i + NEIHBOURHOOD[l][0];
+                    float cj = j + NEIHBOURHOOD[l][1];
+                    x += old(ci, cj);
+                }
+                newIm(i, j) = 0.25 * x;
+            }
+        }
 
-   for (k = 1; k <= ITERATIONS; k++)
-     {
-	for (i = 1; i <= m; i++)
-	  for (j = 1; j <= n; j++)
-          newIm(i, j) = 0.25*(old(i-1,j)+old(i+1,j)+old(i,j-1)+old(i,j+1)-
-              im(i, j));
+        old = newIm;
+	    if (!(k % 1000))
+            printf("%d iterations done\n", k);
+    }
 
-    old = newIm;
-	if (!(k % 1000)) 
-        printf("%d iterations done\n", k);
-     }
-
-   for (i = 1; i <= m; i++)
-     for (j = 1; j <= n; j++)
-       buf(i-1,j-1) = old(i, j);
-
-   enchance(buf);
-
-   pgmwrite("image.pgm", buf, THRESH);
+    img = newIm;
+    enchance(img);
+    pgmwrite("image.pgm", img, THRESH);
     
-   delete &buf;
-   return 0;
+    delete &img;
+    return 0;
 }
 
 void enchance(Matrix<float>& img) {

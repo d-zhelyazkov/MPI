@@ -1,6 +1,9 @@
 #pragma once
 #include <string.h>
 #include <stdlib.h>
+#include <vector>
+
+using std::vector;
 
 template <typename T>
 void templateCalloc(T*& arrPtr, unsigned size) {
@@ -10,58 +13,57 @@ void templateCalloc(T*& arrPtr, unsigned size) {
 template <typename T>
 class Matrix
 {
-    T* mArray = 0;
-    int mRows, mCols;
+private:
+    vector<T> mArray;
+    unsigned mRows, mCols;
 
 public:
-    Matrix(int rows, int cols) : mRows(rows), mCols(cols) {
-        templateCalloc<T>(mArray, size());
-    }
-    ~Matrix() {
-        delete[] mArray;
+    Matrix(unsigned rows, unsigned cols) : mRows(rows), mCols(cols) {
+        mArray.resize(mRows * mCols);
     }
 
-    T& operator ()(int row, int col)
+    Matrix(Matrix<T>& matrix) {
+        *this = matrix;
+    }
+    
+    T& operator ()(unsigned row, unsigned col)
     {
+        if (!isInRange(row, col)) {
+            static T dump;
+            dump = 0;
+            return dump;
+        }
+
         return mArray[row * mCols + col];
     }
 
     Matrix<T>& operator=(Matrix<T>& matrix) {
-        int oldSize = size();
-        int newSize = matrix.size();
-
         mRows = matrix.mRows;
         mCols = matrix.mCols;
+        mArray = matrix.mArray;
 
-        if (mArray) {
-            if (oldSize != newSize) {
-                delete[] mArray;
-                templateCalloc<T>(mArray, newSize);
-            }
-        }
-        else {
-            templateCalloc<T>(mArray, newSize);
-        }
-
-        memcpy(mArray, matrix.mArray, sizeof(T) * newSize);
         return *this;
     }
 
     T* ptr() {
-        return mArray;
+        return &mArray[0];
     }
 
-    int rows() {
+    unsigned rows() {
         return mRows;
     }
 
-    int cols() {
-        return mRows;
+    unsigned cols() {
+        return mCols;
     }
 
-    int size() {
-        return mRows * mCols;
+    unsigned size() {
+        return mArray.size();
     }
 
+private:
+    bool isInRange(unsigned row, unsigned col) {
+        return (row < mRows && col < mCols);
+    }
 };
 
