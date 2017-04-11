@@ -18,7 +18,7 @@ Matrix<float>* datread(char *filename)
 
    int nx, ny;
    fscanf(fp, "%d %d", &nx, &ny);
-   Matrix<float>* vx = new Matrix<float>(ny , nx);
+   Matrix<float>& vx = *new Matrix<float>(ny , nx);
 
    /*
     *  Must cope with the fact that the storage order of the data file
@@ -29,16 +29,16 @@ Matrix<float>* datread(char *filename)
      for (i = 0; i < nx; i++)
        {
 	  fscanf(fp, "%d", &t);
-      (*vx)(j, i) = t;
+      vx(j, i) = t;
        }
 
    fclose(fp);
 
-   return vx;
+   return &vx;
 }
 
 
-void pgmwrite (char *filename, Matrix<float>& x, float thresh)
+void pgmwrite (char *filename, Matrix<float>& img, float thresh)
 {
    FILE *fp;
    int i, j, k;
@@ -49,8 +49,8 @@ void pgmwrite (char *filename, Matrix<float>& x, float thresh)
 	exit(-1);
      }
 
-   int nx = x.getCols();
-   int ny = x.getRows();
+   int nx = img.cols();
+   int ny = img.rows();
    fprintf(fp, "P2\n");
    fprintf(fp, "# Written by pgmwrite\n");
    fprintf(fp, "%d %d\n", nx, ny);
@@ -62,7 +62,7 @@ void pgmwrite (char *filename, Matrix<float>& x, float thresh)
      for (i = 0; i < nx; i++)
        {
 	 
-	  fprintf(fp, "%3d ", x(j, i));
+	  fprintf(fp, "%3d ", img(j, i));
 
 	  if (0 == (k+1)%16) fprintf(fp, "\n");
 

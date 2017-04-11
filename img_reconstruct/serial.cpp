@@ -13,8 +13,8 @@ int main (int argc, char **argv)
    int i,j,k;
   
    Matrix<float>& buf = *datread("edge239x432.dat");
-   int m = buf.getRows();
-   int n = buf.getCols();
+   int m = buf.rows();
+   int n = buf.cols();
    Matrix<float> im(m + 2, n + 2);
    Matrix<float> old(m + 2, n + 2);
    Matrix<float> newIm(m + 2, n + 2);
@@ -53,8 +53,8 @@ void enchance(Matrix<float>& img) {
     /*
     *  Find the max and min absolute values of the array
     */
-    float* x = &img;
-    int N = img.getN();
+    float* x = img.ptr();
+    int N = img.size();
     float xmin = fabs(x[0]);
     float xmax = fabs(x[0]);
 

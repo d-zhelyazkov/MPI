@@ -30,5 +30,5 @@ Matrix<float>* datread(char *filename);
 *  x[nx][ny]. Because of the way C handles (or fails to handle!)
 *  multi-dimensional arrays we have to cast the pointer to void.
 */
-void pgmwrite(char *filename, Matrix<float>& x, float thresh);
+void pgmwrite(char *filename, Matrix<float>& img, float thresh);
 

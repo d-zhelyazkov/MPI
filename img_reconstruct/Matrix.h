@@ -15,7 +15,7 @@ class Matrix
 
 public:
     Matrix(int rows, int cols) : mRows(rows), mCols(cols) {
-        templateCalloc<T>(mArray, getN());
+        templateCalloc<T>(mArray, size());
     }
     ~Matrix() {
         delete[] mArray;
@@ -27,39 +27,39 @@ public:
     }
 
     Matrix<T>& operator=(Matrix<T>& matrix) {
-        int oldN = getN();
-        int N = matrix.getN();
+        int oldSize = size();
+        int newSize = matrix.size();
 
         mRows = matrix.mRows;
         mCols = matrix.mCols;
 
         if (mArray) {
-            if (oldN != N) {
+            if (oldSize != newSize) {
                 delete[] mArray;
-                templateCalloc<T>(mArray, N);
+                templateCalloc<T>(mArray, newSize);
             }
         }
         else {
-            templateCalloc<T>(mArray, N);
+            templateCalloc<T>(mArray, newSize);
         }
 
-        memcpy(mArray, matrix.mArray, sizeof(T) * N);
+        memcpy(mArray, matrix.mArray, sizeof(T) * newSize);
         return *this;
     }
 
-    T* operator &() {
+    T* ptr() {
         return mArray;
     }
 
-    int getRows() {
+    int rows() {
         return mRows;
     }
 
-    int getCols() {
+    int cols() {
         return mRows;
     }
 
-    int getN() {
+    int size() {
         return mRows * mCols;
     }
 
