@@ -2,18 +2,20 @@
 #include <mpi.h>
 #include "Matrix.h"
 
+#define MAIN_PROC 0
+#define THRESH 255
 
 class ImgReconstructProcess
 {
 private:
     int mNextProcRank, mPrevProcRank;
+    Matrix<float>* mBuffImg = NULL;
 
 protected:
     MPI_Comm mCommunicator;
     int mRank;
     Matrix<float>* mOriginalImg = NULL;
-    Matrix<float>* mCurrentImg = NULL;
-    Matrix<float>* mNewImg = NULL;
+    Matrix<float>* mProcessedImg = NULL;
 
 public:
     ImgReconstructProcess(const MPI_Comm& communiator, int rank, int prevProcRank, int nextProcRank) :
@@ -23,14 +25,14 @@ public:
         mNextProcRank(nextProcRank) {}
 
     ~ImgReconstructProcess() {
-        void* pointers[] = { mOriginalImg , mCurrentImg, mNewImg};
+        void* pointers[] = { mOriginalImg , mProcessedImg, mBuffImg};
         for (void* ptr : pointers) {
             if (ptr)
                 delete ptr;
         }
     }
 
-    void setImg(Matrix<float>* img);
+    void setImg(Matrix<float>& img);
 
     virtual void syncData();
 

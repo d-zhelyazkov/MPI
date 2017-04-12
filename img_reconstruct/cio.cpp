@@ -54,13 +54,13 @@ void pgmwrite (char *filename, Matrix<float>& img, float thresh)
     fprintf(fp, "P2\n");
     fprintf(fp, "# Written by pgmwrite\n");
     fprintf(fp, "%d %d\n", nx, ny);
-    fprintf(fp, "%d\n", thresh);
+    fprintf(fp, "%d\n", (int)thresh);
 
     k = 0;
 
     for (j = 0; j < ny; j++)
         for (i = 0; i < nx; i++) {
-	        fprintf(fp, "%3d ", img(j, i));
+	        fprintf(fp, "%3d ", (int)img(j, i));
 	        if (0 == (k+1)%16) fprintf(fp, "\n");
 	        k++;
         }
