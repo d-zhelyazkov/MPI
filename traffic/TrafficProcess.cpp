@@ -9,6 +9,10 @@ void TrafficProcess::syncData()
     MPI_Recv(&mStreet[0], 1, MPI_CHAR, mPrevProcRank, MAIN_PROC, mCommunicator, MPI_STATUS_IGNORE);
     MPI_Recv(&mStreet[0], 1, MPI_CHAR, mPrevProcRank, MAIN_PROC, mCommunicator, MPI_STATUS_IGNORE);
 
+    MPI_Sendrecv(&mStreet[mStreet.size() - 2], 1, MPI_CHAR, mNextProcRank,0,
+        &mStreet[0], 1, MPI_CHAR, mPrevProcRank, MAIN_PROC,
+        mCommunicator, MPI_STATUS_IGNORE)
+
 }
 
 void TrafficProcess::processData() {

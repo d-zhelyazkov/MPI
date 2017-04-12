@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <math.h>
-#include "cio.h"
+#include "../tools/cio.h"
+#include "../tools/Tools.h"
 
 #define ITERATIONS 5000
 #define THRESH 255
@@ -14,7 +15,7 @@ int main (int argc, char **argv)
 {
     int i,j,k;
   
-    Matrix<float>& img = *datread("edge239x432.dat");
+    Matrix<float>& img = *datread(argv[4]);
     Matrix<float> old(img);
     int m = img.rows();
     int n = img.cols();
@@ -41,7 +42,7 @@ int main (int argc, char **argv)
 
     img = newIm;
     enchance(img);
-    pgmwrite("image.pgm", img, THRESH);
+    pgmwrite(argv[5], img, THRESH);
     
     delete &img;
     return 0;
@@ -53,27 +54,8 @@ void enchance(Matrix<float>& img) {
     */
     float* x = img.ptr();
     int N = img.size();
-    float xmin = fabs(x[0]);
-    float xmax = fabs(x[0]);
-
-    for (int i = 0; i < N; i++)
-    {
-        if (fabs(x[i]) < xmin) xmin = fabs(x[i]);
-        if (fabs(x[i]) > xmax) xmax = fabs(x[i]);
-    }
-
-    for (int i = 0; i < N; i++) {
-        /*
-        *  Scale the value appropriately so it lies between 0 and thresh
-        */
-        if (xmin < 0 || xmax > THRESH)
-            x[i] = (int)((THRESH*((fabs(x[i] - xmin)) / (xmax - xmin))) + 0.5);
-        else
-            x[i] = (int)(fabs(x[i]) + 0.5);
-
-        /*
-        *  Increase the contrast by boosting the lower values
-        */
-        x[i] = THRESH * sqrt(x[i] / THRESH);
-    }
+    float xmin = arrayAbsMin(x, N);
+    float xmax = arrayAbsMax(x, N);
+    
+    encahnceImg(x, N, xmin, xmax, THRESH);
 }

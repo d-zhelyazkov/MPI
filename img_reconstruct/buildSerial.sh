@@ -1,0 +1,1 @@
+g++ -std=c++11 -o serial.out serial.cpp ../tools/Tools.cpp ../tools/cio.cpp -lm

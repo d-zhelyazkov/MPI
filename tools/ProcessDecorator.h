@@ -1,19 +1,21 @@
 #pragma once
 #include "Process.h"
 #include <utility>
+#include "Tools.h"
 
 template<typename T, typename std::enable_if<std::is_base_of<Process, T>::value>::type* = nullptr>
 class ProcessDecorator : public Process
 {
 protected:
-    T mProcess;
+    T* mProcess = NULL;
 
 public:
-    ProcessDecorator(T& process) {
-        mProcess = T(process);
+    ProcessDecorator(T* process) {
+        mProcess = new T(*process);
     }
+
     ~ProcessDecorator() {
-        delete mProcess;
+       deleteObject(mProcess);
     }
 
     virtual void initialize() {
@@ -28,8 +30,8 @@ public:
         mProcess->processData();
     }
 
-    virtual int getRank() {
-        return mProcess->getRank();
+    virtual void finalize() {
+        mProcess->finalize();
     }
 };
 

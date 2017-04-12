@@ -1,17 +1,22 @@
 #pragma once
 #include "ImgReconstructProcess.h"
+#include "../tools/ProcessDecorator.h"
 
-#define INPUT_FILE "edge1024x768.dat"
-#define OUTPUT_FILE "image.pgm"
-
-class MainImgReconstructProcess : public ImgReconstructProcess
+class MainImgReconstructProcess : public ProcessDecorator<ImgReconstructProcess>
 {
 private:
     int mWholeImgRows;
+    char* mInputFile = NULL;
+    char* mOutputFile = NULL;
 
 public:
-    MainImgReconstructProcess(const MPI_Comm& communiator, int rank, int prevProcRank, int nextProcRank);
+    MainImgReconstructProcess(ImgReconstructProcess* process, char* inputFile, char* outputFile)
+        : ProcessDecorator(process),
+        mInputFile(inputFile),
+        mOutputFile(outputFile) {}
     
+    virtual void initialize();
+
     virtual void finalize();
 };
 

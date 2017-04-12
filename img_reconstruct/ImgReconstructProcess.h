@@ -1,43 +1,45 @@
 #pragma once
 #include <mpi.h>
-#include "Matrix.h"
+#include "../tools/Tools.h"
+#include "../tools/Matrix.h"
+#include "../tools/MPIProcessBase.h"
 
 #define MAIN_PROC 0
 #define THRESH 255
 
-class ImgReconstructProcess
+class ImgReconstructProcess : public MPIProcessBase
 {
 private:
     int mNextProcRank, mPrevProcRank;
     Matrix<float>* mBuffImg = NULL;
 
 protected:
-    MPI_Comm mCommunicator;
-    int mRank;
     Matrix<float>* mOriginalImg = NULL;
     Matrix<float>* mProcessedImg = NULL;
 
 public:
     ImgReconstructProcess(const MPI_Comm& communiator, int rank, int prevProcRank, int nextProcRank) :
-    mCommunicator(communiator),
-        mRank(rank),
+        MPIProcessBase(communiator, rank),
         mPrevProcRank(prevProcRank),
         mNextProcRank(nextProcRank) {}
 
     ~ImgReconstructProcess() {
         void* pointers[] = { mOriginalImg , mProcessedImg, mBuffImg};
         for (void* ptr : pointers) {
-            if (ptr)
-                delete ptr;
+            deleteObject(ptr);
         }
     }
 
     void setImg(Matrix<float>& img);
 
+    Matrix<float>* getImg();
+
+    virtual void initialize();
+
     virtual void syncData();
 
     virtual void processData();
 
-    virtual void finalize() = 0;
+    virtual void finalize() {};
 };
 

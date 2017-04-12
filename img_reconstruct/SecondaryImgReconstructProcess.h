@@ -1,11 +1,15 @@
 #pragma once
 #include "ImgReconstructProcess.h"
+#include "../tools/ProcessDecorator.h"
 
-class SecondaryImgReconstructProcess : public ImgReconstructProcess
+class SecondaryImgReconstructProcess : public ProcessDecorator<ImgReconstructProcess>
 {
 public:
-    SecondaryImgReconstructProcess(const MPI_Comm& communiator, int rank, int prevProcRank, int nextProcRank);
+    SecondaryImgReconstructProcess(ImgReconstructProcess* process)
+        : ProcessDecorator(process) {}
     
+    virtual void initialize();
+
     virtual void finalize();
 };
 

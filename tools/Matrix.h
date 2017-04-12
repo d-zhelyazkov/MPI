@@ -1,29 +1,27 @@
 #pragma once
 #include <string.h>
 #include <stdlib.h>
-#include <vector>
-
-using std::vector;
-
-template <typename T>
-void templateCalloc(T*& arrPtr, unsigned size) {
-    arrPtr = (T*)calloc(size, sizeof(T));
-}
+#include "Tools.h"
 
 template <typename T>
 class Matrix
 {
 private:
-    vector<T> mArray;
-    unsigned mRows, mCols;
+    T* mArray = NULL;
+    unsigned mRows = 0;
+    unsigned mCols = 0;
 
 public:
     Matrix(unsigned rows, unsigned cols) : mRows(rows), mCols(cols) {
-        mArray.resize(mRows * mCols);
+        calloc(mArray, size());
     }
-
+    
     Matrix(Matrix<T>& matrix) {
         *this = matrix;
+    }
+
+    ~Matrix() {
+        deleteArray(mArray);
     }
     
     T& operator ()(unsigned row, unsigned col)
@@ -38,9 +36,15 @@ public:
     }
 
     Matrix<T>& operator=(Matrix<T>& matrix) {
+        unsigned oldSize = size();
         mRows = matrix.mRows;
         mCols = matrix.mCols;
-        mArray = matrix.mArray;
+
+        unsigned newSize = matrix.size();
+        if (oldSize != newSize) {
+            deleteArray(mArray);
+        }
+        copyArray(mArray, matrix.mArray, newSize);
 
         return *this;
     }
@@ -58,7 +62,7 @@ public:
     }
 
     unsigned size() {
-        return mArray.size();
+        return mRows * mCols;
     }
 
 private:

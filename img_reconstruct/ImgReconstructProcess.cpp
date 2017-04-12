@@ -6,11 +6,20 @@ const char NEIHBOURHOOD[][2] = { { 1,0 },{ -1,0 },{ 0,1 },{ 0,-1 } };
 void ImgReconstructProcess::setImg(Matrix<float>& img)
 {
     mOriginalImg = new Matrix<float>(img);
-    int rows = img.rows();
-    int cols = img.cols();
+}
+
+Matrix<float>* ImgReconstructProcess::getImg()
+{
+    return new Matrix<float>(*mProcessedImg);
+}
+
+void ImgReconstructProcess::initialize()
+{
+    int rows = mOriginalImg->rows();
+    int cols = mOriginalImg->cols();
 
     mProcessedImg = new Matrix<float>(rows + 2, cols);
-    memcpy(mProcessedImg->ptr() + cols, img.ptr(), img.size() * sizeof(float));
+    memcpy(mProcessedImg->ptr() + cols, mOriginalImg->ptr(), mOriginalImg->size() * sizeof(float));
 
     mBuffImg = new Matrix<float>(rows + 2, cols);
     //printf("P%d:\tpixels: %d\trows: %d\tcols: %d\n",mRank, img.size(), img.rows(), img.cols());
