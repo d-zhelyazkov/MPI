@@ -260,3 +260,5 @@ paket-files/
 /traffic/traffic_serial
 /img_reconstruct/ImageReconC.tar.bz2
 /img_reconstruct/*.pgm
+*.vcxproj
+*.filters
