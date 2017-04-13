@@ -13,7 +13,7 @@ private:
 
 public:
     Matrix(unsigned rows, unsigned cols) : mRows(rows), mCols(cols) {
-        calloc(mArray, size());
+        mArray = calloc<T>(size());
     }
     
     Matrix(Matrix<T>& matrix) {
@@ -50,7 +50,7 @@ public:
     }
 
     T* ptr() {
-        return &mArray[0];
+        return mArray;
     }
 
     unsigned rows() {
@@ -71,3 +71,7 @@ private:
     }
 };
 
+template <typename T>
+void print(Matrix<T>& matrix) {
+    printf("Matrix:\trows: %d\tcols: \%d\tsize: %d\n", matrix.rows(), matrix.cols(), matrix.size());
+}

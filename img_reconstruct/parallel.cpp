@@ -25,7 +25,7 @@ int main(int argc, char **argv)
 
     Process* process;
     if (rank == MAIN_PROC)
-        process = new MainImgReconstructProcess(processBase, argv[4], argv[5]);
+        process = new MainImgReconstructProcess(processBase, argv[1], argv[2]);
     else
         process = new SecondaryImgReconstructProcess(processBase);
     
@@ -47,8 +47,8 @@ int main(int argc, char **argv)
 
     MPI_Finalize();
 
-    delete processBase;
-    delete process;
+    deleteObject(processBase);
+    deleteObject(process);
 
     return 0;
 }

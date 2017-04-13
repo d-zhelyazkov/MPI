@@ -1,17 +1,9 @@
 #include "ImgReconstructProcess.h"
 
+
 #define NEIHBOURHOOD_SIZE 4
 const char NEIHBOURHOOD[][2] = { { 1,0 },{ -1,0 },{ 0,1 },{ 0,-1 } };
 
-void ImgReconstructProcess::setImg(Matrix<float>& img)
-{
-    mOriginalImg = new Matrix<float>(img);
-}
-
-Matrix<float>* ImgReconstructProcess::getImg()
-{
-    return new Matrix<float>(*mProcessedImg);
-}
 
 void ImgReconstructProcess::initialize()
 {

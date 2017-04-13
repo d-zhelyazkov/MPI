@@ -1,1 +1,1 @@
-g++ -std=c++11 -o parallel.out parallel.cpp  ImgReconstructProcess.cpp MainImgReconstructProcess.cpp SecondaryImgReconstructProcess.cpp ../tools/Tools.cpp ../tools/cio.cpp -lm
+mpic++ -std=c++11 -o parallel.out parallel.cpp  ImgReconstructProcess.cpp MainImgReconstructProcess.cpp SecondaryImgReconstructProcess.cpp ../tools/Tools.cpp ../tools/cio.cpp -lm

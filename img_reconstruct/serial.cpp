@@ -15,12 +15,20 @@ int main (int argc, char **argv)
 {
     int i,j,k;
   
-    Matrix<float>& img = *datread(argv[4]);
-    Matrix<float> old(img);
+    Matrix<float>& img = *datread(argv[1]);
+    printf("Image read.\n");
+
+    Matrix<float> currImg(img);
+    printf("currImg created - ");
+    print(currImg);
+
     int m = img.rows();
     int n = img.cols();
-    Matrix<float> newIm(m, n);
+    Matrix<float> buffImg(m, n);
+    printf("buffImg created - ");
+    print(buffImg);
 
+    printf("Start processing.\n");
     for (k = 1; k <= ITERATIONS; k++) {
         for (i = 0; i < m; i++) {
             for (j = 0; j < n; j++)
@@ -29,21 +37,22 @@ int main (int argc, char **argv)
                 for (int l = 0; l < NEIHBOURHOOD_SIZE; l++) {
                     float ci = i + NEIHBOURHOOD[l][0];
                     float cj = j + NEIHBOURHOOD[l][1];
-                    x += old(ci, cj);
+                    x += currImg(ci, cj);
                 }
-                newIm(i, j) = 0.25 * x;
+                buffImg(i, j) = 0.25 * x;
             }
         }
 
-        old = newIm;
+        currImg = buffImg;
 	    if (!(k % 1000))
             printf("%d iterations done\n", k);
     }
 
-    img = newIm;
+    img = currImg;
     enchance(img);
-    pgmwrite(argv[5], img, THRESH);
-    
+    pgmwrite(argv[2], img, THRESH);
+    printf("Image written.\n");
+
     delete &img;
     return 0;
 }

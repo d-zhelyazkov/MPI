@@ -12,8 +12,6 @@ class ImgReconstructProcess : public MPIProcessBase
 private:
     int mNextProcRank, mPrevProcRank;
     Matrix<float>* mBuffImg = NULL;
-
-protected:
     Matrix<float>* mOriginalImg = NULL;
     Matrix<float>* mProcessedImg = NULL;
 
@@ -30,9 +28,13 @@ public:
         }
     }
 
-    void setImg(Matrix<float>& img);
+    void setImg(Matrix<float>& img) {
+        mOriginalImg = new Matrix<float>(img);
+    }
 
-    Matrix<float>* getImg();
+    Matrix<float>* getImg() {
+        return new Matrix<float>(*mProcessedImg);
+    }
 
     virtual void initialize();
 

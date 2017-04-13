@@ -35,9 +35,9 @@ void MainImgReconstructProcess::initialize()
     mProcess->setImg(localImg);
     mProcess->initialize();
 
+    deleteArray(processesPixels);
+    deleteArray(processesPixelsOffsets);
     delete &wholeImg;
-    delete[] processesPixels;
-    delete[] processesPixelsOffsets;
     delete &comm;
 }
 
@@ -58,7 +58,6 @@ void MainImgReconstructProcess::finalize()
     MPI_Gather(MPI_IN_PLACE, 0, MPI_FLOAT, mins, 1, MPI_FLOAT, MAIN_PROC, comm);
     float globalMin = arrayAbsMin(mins, processesCnt);
     MPI_Bcast(&globalMin, 1, MPI_FLOAT, MAIN_PROC, comm);
-    delete[] mins;
 
     //compute global max and share it
     float* maxes = new float[processesCnt];
@@ -66,24 +65,21 @@ void MainImgReconstructProcess::finalize()
     MPI_Gather(MPI_IN_PLACE, 0, MPI_FLOAT, maxes, 1, MPI_FLOAT, MAIN_PROC, comm);
     float globalMax = arrayAbsMax(maxes, processesCnt);
     MPI_Bcast(&globalMax, 1, MPI_FLOAT, MAIN_PROC, comm);
-    delete[] maxes;
 
     encahnceImg(imgArr, imgArrSize, globalMin, globalMax, THRESH);
 
     //Compute processes rows from the img
     int* processesPixels;
-    int* processesRixelOffsets;
-    computeProcessesWork(processesCnt, mWholeImgRows, processesPixels, processesRixelOffsets, cols);
+    int* processesPixelOffsets;
+    computeProcessesWork(processesCnt, mWholeImgRows, processesPixels, processesPixelOffsets, cols);
 
     //constructing whole image
     Matrix<float> wholeImage(mWholeImgRows, cols);
     //printf("MAIN: will gather whole image.\n");
     MPI_Gatherv(MPI_IN_PLACE, 0, MPI_FLOAT,
-        wholeImage.ptr(), processesPixels, processesRixelOffsets, MPI_FLOAT,
+        wholeImage.ptr(), processesPixels, processesPixelOffsets, MPI_FLOAT,
         MAIN_PROC, comm);
     //printf("MAIN: whole image gathered.\n");
-    delete[] processesPixels;
-    delete[] processesRixelOffsets;
 
     float* wholeImgArr = wholeImage.ptr();
     copyArray(wholeImgArr, imgArr, imgArrSize);
@@ -91,8 +87,12 @@ void MainImgReconstructProcess::finalize()
     //writing to file
     pgmwrite(mOutputFile, wholeImage, THRESH);
 
-    delete &comm;
     delete &img;
+    delete &comm;
+    deleteArray(mins);
+    deleteArray(maxes);
+    deleteArray(processesPixels);
+    deleteArray(processesPixelOffsets);
 }
 
 void computeProcessesWork(int processes, int work, int*& sizes, int*& offsets, int k) {

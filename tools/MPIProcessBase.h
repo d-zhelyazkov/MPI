@@ -12,7 +12,7 @@ public:
         mRank(rank) {}
 
     MPI_Comm* getCommunicator() {
-        return &mCommunicator;
+        return new MPI_Comm(mCommunicator);
     }
 
     int getRank() {

@@ -1,18 +1,17 @@
 #pragma once
 #include <string.h>
+#include <stdlib.h>
 
 #define deleteArray(arr) if(arr != NULL) {delete[] arr; arr = NULL;}
 #define deleteObject(obj) if(obj != NULL) {delete obj; obj = NULL;}
 
 template <typename T>
-void calloc(T*& arr, unsigned size) {
-    deleteArray(arr);
-    arr = (T*)calloc(size, sizeof(T));
+T* calloc(unsigned size) {
+    return (T*)calloc(size, sizeof(T));
 }
 
 template<typename T>
 T* cloneArray(T* arr, unsigned size) {
-    deleteArray(arr);
     T* clone = new T[size];
     memcpy(clone, arr, size * sizeof(T));
     return clone;
@@ -20,7 +19,7 @@ T* cloneArray(T* arr, unsigned size) {
 
 template<typename T>
 void copyArray(T*& dest, T* src, unsigned size) {
-    if (dest == NULL) {
+    if (dest == NULL) { 
         dest = cloneArray(src, size);
     }
     else {
