@@ -7,13 +7,14 @@ template <typename T>
 class Matrix
 {
 private:
-    T* mArray = NULL;
+    T** m2DArray = NULL;
     unsigned mRows = 0;
     unsigned mCols = 0;
 
 public:
     Matrix(unsigned rows, unsigned cols) : mRows(rows), mCols(cols) {
-        mArray = calloc<T>(size());
+        init2DArray();
+
     }
     
     Matrix(Matrix<T>& matrix) {
@@ -21,7 +22,7 @@ public:
     }
 
     ~Matrix() {
-        deleteArray(mArray);
+        release2dArray();
     }
     
     T& operator ()(unsigned row, unsigned col)
@@ -32,25 +33,25 @@ public:
             return dump;
         }
 
-        return mArray[row * mCols + col];
+        return m2DArray[row][col];
     }
 
     Matrix<T>& operator=(Matrix<T>& matrix) {
-        unsigned oldSize = size();
-        mRows = matrix.mRows;
-        mCols = matrix.mCols;
-
-        unsigned newSize = matrix.size();
-        if (oldSize != newSize) {
-            deleteArray(mArray);
+        if ((mRows != matrix.mRows) || (mCols != matrix.mCols)) {
+            mRows = matrix.mRows;
+            mCols = matrix.mCols;
+            
+            release2dArray();
+            init2DArray();
         }
-        copyArray(mArray, matrix.mArray, newSize);
+        copyArray(m2DArray[0], matrix.m2DArray[0], size());
+
 
         return *this;
     }
 
     T* ptr() {
-        return mArray;
+        return m2DArray[0];
     }
 
     unsigned rows() {
@@ -66,6 +67,21 @@ public:
     }
 
 private:
+    void init2DArray() {
+        T* arr = calloc<T>(size());
+        m2DArray = new T*[mRows];
+        for (int i = 0; i < mRows; i++) {
+            m2DArray[i] = arr + (i * mCols);
+        }
+    }
+
+    void release2dArray() {
+        if (m2DArray) {
+            deleteArray(m2DArray[0]);
+            deleteArray(m2DArray);
+        }
+    }
+
     bool isInRange(unsigned row, unsigned col) {
         return (row < mRows && col < mCols);
     }
