@@ -1,44 +1,40 @@
 #include <stdio.h>
 #include <math.h>
-#include <time.h>
+#include "Commons.h"
 #include "../tools/cio.h"
 #include "../tools/Tools.h"
+#include <time.h>
 
-#define ITERATIONS 5000
 #define THRESH 255
+
 
 void enchance(Matrix<float>& img);
 
 int main (int argc, char **argv)
 {
-    clock_t beginTime = clock();
+
+    checkARGV(argc, argv);
 
     int i,j,k;
   
     Matrix<float>& img = *datread(argv[1]);
+
     int m = img.rows();
     int n = img.cols();
-    printf("Image read.\n");
-    clock_t readTime = clock() - beginTime;
-
     Matrix<float> processedImg(m + 2, n + 2);
     for (i = 0; i < m; i++) {
         float* imgRow = img.getRowPtr(i);
         float* processRow = &processedImg.getRowPtr(i + 1)[1];
         copyArray(processRow, imgRow, n);
     }
-    printf("currImg created - ");
-    print(processedImg);
 
     Matrix<float> buffImg(m + 2, n + 2);
-    printf("buffImg created - ");
-    print(buffImg);
-
-    clock_t initTime = clock() - readTime;
-
+    
     printf("Start processing.\n");
+    clock_t processBeginTime = clock();
+    int iterations = atoi(argv[2]);
     double avgItTime = 0;
-    for (k = 1; k <= ITERATIONS; k++) {
+    for (k = 1; k <= iterations; k++) {
         clock_t itStartTime = clock();
         for (i = 1; i <= m; i++) {
             for (j = 1; j <= n; j++)
@@ -47,23 +43,22 @@ int main (int argc, char **argv)
                     processedImg(i, j - 1)+ processedImg(i, j + 1) + img(i - 1, j - 1));
             }
         }
-
-        clock_t itProcessTime = clock() - itStartTime;
-        avgItTime = (double)itProcessTime / ITERATIONS;
-
+        
         processedImg = buffImg;
+
+        clock_t itTime = clock() - itStartTime;
+        avgItTime += clockToS(itTime) / iterations;
 	    if (!(k % 1000))
             printf("%d iterations done\n", k);
     }
-    clock_t processTime = clock() - initTime;
+    printf("Processing completed - %fs\n", clockToS(clock() - processBeginTime));
+    printf("Avg iteration time: %fs\n", avgItTime);
 
+    clock_t enchanceBeginTime = clock();
     enchance(processedImg);
-    pgmwrite(argv[2], processedImg, THRESH);
-    printf("Image written.\n");
+    printf("Img enchance time: %fs\n", clockToS(clock() - enchanceBeginTime));
 
-    clock_t writeTime = clock() - processTime;
-
-    printf("Iteration: %f\n", avgItTime);
+    pgmwrite(getOutputFileName(argv[1], iterations, "serial"), processedImg, THRESH);
 
     delete &img;
     return 0;

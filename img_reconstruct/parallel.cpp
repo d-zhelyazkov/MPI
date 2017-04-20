@@ -1,12 +1,13 @@
 #include "MainImgReconstructProcess.h"
 #include "SecondaryImgReconstructProcess.h"
-
-#define ITERATIONS 20000
+#include <string.h>
+#include "Commons.h"
 
 int main(int argc, char **argv)
 {
     /* Initialize MPI environment */
     MPI_Init(&argc, &argv);
+    checkARGV(argc, argv);
 
     /* Get communicator size */
     int processes;
@@ -24,24 +25,30 @@ int main(int argc, char **argv)
     ImgReconstructProcess* processBase = new ImgReconstructProcess(communicator, rank, prevRank, nextRank);
 
     Process* process;
+    int iterations = atoi(argv[2]);
     if (rank == MAIN_PROC)
-        process = new MainImgReconstructProcess(processBase, argv[1], argv[2]);
+        process = new MainImgReconstructProcess(processBase, argv[1], getOutputFileName(argv[1], iterations, "parallel"));
     else
         process = new SecondaryImgReconstructProcess(processBase);
     
     //iteration loop
     process->initialize();
-    double startTime = MPI_Wtime();
-    for (int i = 1; i <= ITERATIONS; i++) {
+    clock_t processBeginTime = clock();
+    double avgItTime = 0;
+    for (int i = 1; i <= iterations; i++) {
+        clock_t itStartTime = clock();
         process->syncData();
         process->processData();
 
+        clock_t itTime = clock() - itStartTime;
+        avgItTime += clockToS(itTime) / iterations;
         if (!rank && !(i % 1000))
             printf("%d iterations done\n", i);
     }
-    double endTime = MPI_Wtime();
-    if(!rank)
-        printf("\nProcessing time: %f\n", endTime - startTime);
+    if (!rank) {
+        printf("Processing completed - %fs\n", clockToS(clock() - processBeginTime));
+        printf("Avg iteration time: %fs\n", avgItTime);
+    }
 
     process->finalize();
 
