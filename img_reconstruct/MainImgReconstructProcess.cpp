@@ -4,6 +4,8 @@
 
 void computeProcessesWork(int processes, int work, int*& sizes, int*& offsets, int k);
 
+void enchance(Matrix<float>& img);
+
 void MainImgReconstructProcess::initialize()
 {
     Matrix<float>& wholeImg = *datread(mInputFile);
@@ -51,23 +53,7 @@ void MainImgReconstructProcess::finalize()
     int cols = img.cols();
     float* imgArr = img.ptr() + cols;
     int imgArrSize = (img.size() - 2 * cols);
-
-    //compute global min and share it
-    float* mins = new float[processesCnt];
-    mins[MAIN_PROC] = arrayAbsMin(imgArr, imgArrSize);
-    MPI_Gather(MPI_IN_PLACE, 0, MPI_FLOAT, mins, 1, MPI_FLOAT, MAIN_PROC, comm);
-    float globalMin = arrayAbsMin(mins, processesCnt);
-    MPI_Bcast(&globalMin, 1, MPI_FLOAT, MAIN_PROC, comm);
-
-    //compute global max and share it
-    float* maxes = new float[processesCnt];
-    maxes[MAIN_PROC] = arrayAbsMax(imgArr, imgArrSize);
-    MPI_Gather(MPI_IN_PLACE, 0, MPI_FLOAT, maxes, 1, MPI_FLOAT, MAIN_PROC, comm);
-    float globalMax = arrayAbsMax(maxes, processesCnt);
-    MPI_Bcast(&globalMax, 1, MPI_FLOAT, MAIN_PROC, comm);
-
-    encahnceImg(imgArr, imgArrSize, globalMin, globalMax, THRESH);
-
+    
     //Compute processes rows from the img
     int* processesPixels;
     int* processesPixelOffsets;
@@ -84,13 +70,13 @@ void MainImgReconstructProcess::finalize()
     float* wholeImgArr = wholeImage.ptr();
     copyArray(wholeImgArr, imgArr, imgArrSize);
     
+    enchance(wholeImage);
+
     //writing to file
     pgmwrite(mOutputFile, wholeImage, THRESH);
 
     delete &img;
     delete &comm;
-    deleteArray(mins);
-    deleteArray(maxes);
     deleteArray(processesPixels);
     deleteArray(processesPixelOffsets);
 }
@@ -109,4 +95,16 @@ void computeProcessesWork(int processes, int work, int*& sizes, int*& offsets, i
         //printf("%d:\twork: %d\toffset: %d\n", i, size, currOffset);
         currOffset += size;
     }
+}
+
+void enchance(Matrix<float>& img) {
+    /*
+    *  Find the max and min absolute values of the array
+    */
+    float* x = img.ptr();
+    int N = img.size();
+    float xmin = arrayAbsMin(x, N);
+    float xmax = arrayAbsMax(x, N);
+
+    encahnceImg(x, N, xmin, xmax, THRESH);
 }

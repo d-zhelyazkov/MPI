@@ -1,19 +1,19 @@
 #include "ImgReconstructProcess.h"
 
 
-#define NEIHBOURHOOD_SIZE 4
-const char NEIHBOURHOOD[][2] = { { 1,0 },{ -1,0 },{ 0,1 },{ 0,-1 } };
-
-
 void ImgReconstructProcess::initialize()
 {
     int rows = mOriginalImg->rows();
     int cols = mOriginalImg->cols();
 
-    mProcessedImg = new Matrix<float>(rows + 2, cols);
-    memcpy(mProcessedImg->ptr() + cols, mOriginalImg->ptr(), mOriginalImg->size() * sizeof(float));
+    mProcessedImg = new Matrix<float>(rows + 2, cols + 2);
+    for (int i = 0; i < rows; i++) {
+        float* imgRow = mOriginalImg->getRowPtr(i);
+        float* processRow = &mProcessedImg->getRowPtr(i + 1)[1];
+        copyArray(processRow, imgRow, cols);
+    }
 
-    mBuffImg = new Matrix<float>(rows + 2, cols);
+    mBuffImg = new Matrix<float>(rows + 2, cols + 2);
     //printf("P%d:\tpixels: %d\trows: %d\tcols: %d\n",mRank, img.size(), img.rows(), img.cols());
 
 }
@@ -22,30 +22,24 @@ void ImgReconstructProcess::syncData()
 {
     //syncronizing data
     int cols = mProcessedImg->cols();
-    float* beginPtr = mProcessedImg->ptr();
-    float* endPtr = beginPtr + mProcessedImg->size();
+    int rows = mProcessedImg->rows();
 
-    MPI_Sendrecv(endPtr - 2 * cols, cols, MPI_FLOAT, mNextProcRank, 0,
-        beginPtr, cols, MPI_FLOAT, mPrevProcRank, 0,
+    MPI_Sendrecv(mProcessedImg->getRowPtr(rows - 2), cols, MPI_FLOAT, mNextProcRank, 0,
+        mProcessedImg->getRowPtr(0), cols, MPI_FLOAT, mPrevProcRank, 0,
         mCommunicator, MPI_STATUS_IGNORE);
-    MPI_Sendrecv(beginPtr + cols, cols, MPI_FLOAT, mPrevProcRank, 0,
-        endPtr - cols, cols, MPI_FLOAT, mNextProcRank, 0,
+    MPI_Sendrecv(mProcessedImg->getRowPtr(1), cols, MPI_FLOAT, mPrevProcRank, 0,
+        mProcessedImg->getRowPtr(rows - 1), cols, MPI_FLOAT, mNextProcRank, 0,
         mCommunicator, MPI_STATUS_IGNORE);
 }
 
 void ImgReconstructProcess::processData()
 {
 
-    for (int i = 1; i < mProcessedImg->rows(); i++) {
-        for (int j = 0; j < mProcessedImg->cols(); j++)
+    for (int i = 1; i < mProcessedImg->rows() - 1; i++) {
+        for (int j = 1; j < mProcessedImg->cols() - 1; j++)
         {
-            float x = (*mOriginalImg)(i, j);
-            for (int l = 0; l < NEIHBOURHOOD_SIZE; l++) {
-                float ci = i + NEIHBOURHOOD[l][0];
-                float cj = j + NEIHBOURHOOD[l][1];
-                x += (*mProcessedImg)(ci, cj);
-            }
-            (*mBuffImg)(i, j) = 0.25 * x;
+            (*mBuffImg)(i, j) = 0.25 * ((*mProcessedImg)(i - 1, j) + (*mProcessedImg)(i + 1, j) +
+                (*mProcessedImg)(i, j - 1) + (*mProcessedImg)(i, j + 1) + (*mOriginalImg)(i - 1, j - 1));
         }
     }
 

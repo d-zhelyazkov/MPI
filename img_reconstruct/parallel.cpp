@@ -1,7 +1,7 @@
 #include "MainImgReconstructProcess.h"
 #include "SecondaryImgReconstructProcess.h"
 
-#define ITERATIONS 5000
+#define ITERATIONS 20000
 
 int main(int argc, char **argv)
 {

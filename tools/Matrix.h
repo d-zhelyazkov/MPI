@@ -7,14 +7,13 @@ template <typename T>
 class Matrix
 {
 private:
-    T** m2DArray = NULL;
+    T* mArray = NULL;
     unsigned mRows = 0;
     unsigned mCols = 0;
 
 public:
     Matrix(unsigned rows, unsigned cols) : mRows(rows), mCols(cols) {
-        init2DArray();
-
+        mArray = calloc<T>(size());
     }
     
     Matrix(Matrix<T>& matrix) {
@@ -22,36 +21,31 @@ public:
     }
 
     ~Matrix() {
-        release2dArray();
+        deleteArray(mArray);
     }
     
+    //unsafe
     T& operator ()(unsigned row, unsigned col)
     {
-        if (!isInRange(row, col)) {
-            static T dump;
-            dump = 0;
-            return dump;
-        }
-
-        return m2DArray[row][col];
+        return mArray[row * mCols + col];
     }
 
     Matrix<T>& operator=(Matrix<T>& matrix) {
-        if ((mRows != matrix.mRows) || (mCols != matrix.mCols)) {
-            mRows = matrix.mRows;
-            mCols = matrix.mCols;
-            
-            release2dArray();
-            init2DArray();
-        }
-        copyArray(m2DArray[0], matrix.m2DArray[0], size());
+        unsigned oldSize = size();
+        mRows = matrix.mRows;
+        mCols = matrix.mCols;
 
+        unsigned newSize = matrix.size();
+        if (oldSize != newSize) {
+            deleteArray(mArray);
+        }
+        copyArray(mArray, matrix.mArray, newSize);
 
         return *this;
     }
 
     T* ptr() {
-        return m2DArray[0];
+        return mArray;
     }
 
     unsigned rows() {
@@ -66,22 +60,12 @@ public:
         return mRows * mCols;
     }
 
+    //unsafe
+    T* getRowPtr(unsigned row) {
+        return &mArray[row * mCols];
+    }
+
 private:
-    void init2DArray() {
-        T* arr = calloc<T>(size());
-        m2DArray = new T*[mRows];
-        for (int i = 0; i < mRows; i++) {
-            m2DArray[i] = arr + (i * mCols);
-        }
-    }
-
-    void release2dArray() {
-        if (m2DArray) {
-            deleteArray(m2DArray[0]);
-            deleteArray(m2DArray);
-        }
-    }
-
     bool isInRange(unsigned row, unsigned col) {
         return (row < mRows && col < mCols);
     }

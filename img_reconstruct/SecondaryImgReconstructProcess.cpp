@@ -4,10 +4,10 @@
 
 void SecondaryImgReconstructProcess:: initialize()
 {
-    int pixels;
 
     MPI_Comm& comm = *mProcess->getCommunicator();
 
+    int pixels;
     MPI_Scatter(NULL, 0, MPI_INT,
         &pixels, 1, MPI_INT, MAIN_PROC, comm);
     int cols;
@@ -30,21 +30,7 @@ void SecondaryImgReconstructProcess::finalize()
     int cols = img.cols();
     float* imgArray = img.ptr() + cols;
     int imgArraySize = (img.size() - 2 * cols);
-
-    //compute and send local min, wait for global min
-    float localMin = arrayAbsMin(imgArray, imgArraySize);
-    MPI_Gather(&localMin, 1, MPI_FLOAT, NULL, 0, MPI_FLOAT, MAIN_PROC, comm);
-    float globalMin;
-    MPI_Bcast(&globalMin, 1, MPI_FLOAT, MAIN_PROC, comm);
-
-    //compute and send local max, wait for global max
-    float localMax = arrayAbsMax(imgArray, imgArraySize);
-    MPI_Gather(&localMax, 1, MPI_FLOAT, NULL, 0, MPI_FLOAT, MAIN_PROC, comm);
-    float globalMax;
-    MPI_Bcast(&globalMax, 1, MPI_FLOAT, MAIN_PROC, comm);
-
-    encahnceImg(imgArray, imgArraySize, globalMin, globalMax, THRESH);
-
+    
     MPI_Gatherv(imgArray, imgArraySize, MPI_FLOAT,
         NULL, NULL, NULL, MPI_FLOAT,
         MAIN_PROC, comm);

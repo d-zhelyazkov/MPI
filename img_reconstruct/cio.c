@@ -17,6 +17,7 @@
 
 #include <stdio.h>
 #include <math.h>
+#include <stdlib.h>
 
 /*
  *  Routine to read an "edges" data file into a 2D floating point array
