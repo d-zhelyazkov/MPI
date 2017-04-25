@@ -1,22 +1,33 @@
 #pragma once
-#include "ImgReconstructProcess.h"
-#include "../tools/ProcessDecorator.h"
+#include "MPIImgReconstructProcess.h"
+#include <string>
 
-class MainImgReconstructProcess : public ProcessDecorator<ImgReconstructProcess>
-{
+using std::string;
+
+class MainImgReconstructProcess : public MPIImgReconstructProcess {
 private:
     int mWholeImgRows;
-    char* mInputFile = NULL;
-    char* mOutputFile = NULL;
+    string mInputFile = NULL;
+    string mOutputFile = NULL;
 
 public:
-    MainImgReconstructProcess(ImgReconstructProcess* process, char* inputFile, char* outputFile)
-        : ProcessDecorator(process),
+    MainImgReconstructProcess(const MPI_Comm& communiator, int rank, int prevProcRank, int nextProcRank, ImgReconstructProcess& process,
+        string& inputFile, string& outputFile)
+        : MPIImgReconstructProcess(communiator, rank, prevProcRank, nextProcRank, process),
         mInputFile(inputFile),
         mOutputFile(outputFile) {}
     
+    MainImgReconstructProcess(MainImgReconstructProcess& process) : 
+        MPIImgReconstructProcess(process),
+        mInputFile(process.mInputFile),
+        mOutputFile(process.mOutputFile) {}
+
     virtual void initialize();
 
     virtual void finalize();
+
+    virtual MainImgReconstructProcess* clone() {
+        return new MainImgReconstructProcess(*this);
+    }
 };
 

@@ -5,7 +5,7 @@
 #include <stdlib.h>
 
 
-Matrix<float>* datread(char *filename)
+Matrix<float>* datread(const char* filename)
 { 
     FILE *fp;
     int i, j, t;
@@ -38,7 +38,7 @@ Matrix<float>* datread(char *filename)
 }
 
 
-void pgmwrite (char *filename, Matrix<float>& img, float thresh)
+void pgmwrite (const char* filename, Matrix<float>& img, float thresh)
 {
     FILE *fp;
     int i, j, k;

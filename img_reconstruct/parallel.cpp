@@ -1,5 +1,6 @@
 #include "MainImgReconstructProcess.h"
 #include "SecondaryImgReconstructProcess.h"
+#include "../tools/MainProcess.h"
 #include <string.h>
 #include "Commons.h"
 
@@ -22,39 +23,31 @@ int main(int argc, char **argv)
     /* Get process rank in the communicator */
     MPI_Comm_rank(communicator, &rank);
     MPI_Cart_shift(communicator, 0, 1, &prevRank, &nextRank);
-    ImgReconstructProcess* processBase = new ImgReconstructProcess(communicator, rank, prevRank, nextRank);
 
     Process* process;
+    ImgReconstructProcess baseProcess;
     int iterations = atoi(argv[2]);
-    if (rank == MAIN_PROC)
-        process = new MainImgReconstructProcess(processBase, argv[1], getOutputFileName(argv[1], iterations, "parallel"));
-    else
-        process = new SecondaryImgReconstructProcess(processBase);
-    
-    //iteration loop
+    if (rank == MAIN_PROC) {
+        string inputFile(argv[1]);
+        string& outputFile = *getOutputFileName(argv[1], iterations, "parallel");
+        MainImgReconstructProcess rootProcess(communicator, rank, prevRank, nextRank,
+            baseProcess, inputFile, outputFile);
+        process = new MainProcess(rootProcess);
+        delete &outputFile;
+    }   
+    else {
+        process = new SecondaryImgReconstructProcess(communicator, rank, prevRank, nextRank, baseProcess);
+    }
+
     process->initialize();
-    clock_t processBeginTime = clock();
-    double avgItTime = 0;
+    //iteration loop
     for (int i = 1; i <= iterations; i++) {
-        clock_t itStartTime = clock();
-        process->syncData();
         process->processData();
-
-        clock_t itTime = clock() - itStartTime;
-        avgItTime += clockToS(itTime) / iterations;
-        if (!rank && !(i % 1000))
-            printf("%d iterations done\n", i);
     }
-    if (!rank) {
-        printf("Processing completed - %fs\n", clockToS(clock() - processBeginTime));
-        printf("Avg iteration time: %fs\n", avgItTime);
-    }
-
     process->finalize();
 
     MPI_Finalize();
 
-    deleteObject(processBase);
     deleteObject(process);
 
     return 0;

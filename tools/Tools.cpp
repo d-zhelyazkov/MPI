@@ -1,6 +1,7 @@
 #include "Tools.h"
 #include <math.h>
 
+
 float arrayAbsMin(float* arr, int N) {
 
     float min = fabs(arr[0]);

@@ -18,20 +18,6 @@ void ImgReconstructProcess::initialize()
 
 }
 
-void ImgReconstructProcess::syncData()
-{
-    //syncronizing data
-    int cols = mProcessedImg->cols();
-    int rows = mProcessedImg->rows();
-
-    MPI_Sendrecv(mProcessedImg->getRowPtr(rows - 2), cols, MPI_FLOAT, mNextProcRank, 0,
-        mProcessedImg->getRowPtr(0), cols, MPI_FLOAT, mPrevProcRank, 0,
-        mCommunicator, MPI_STATUS_IGNORE);
-    MPI_Sendrecv(mProcessedImg->getRowPtr(1), cols, MPI_FLOAT, mPrevProcRank, 0,
-        mProcessedImg->getRowPtr(rows - 1), cols, MPI_FLOAT, mNextProcRank, 0,
-        mCommunicator, MPI_STATUS_IGNORE);
-}
-
 void ImgReconstructProcess::processData()
 {
 

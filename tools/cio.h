@@ -23,12 +23,12 @@
 *  x[nx][ny]. Because of the way C handles (or fails to handle!)
 *  multi-dimensional arrays we have to cast the pointer to void.
 */
-Matrix<float>* datread(char *filename);
+Matrix<float>* datread(const char* filename);
 
 /*
 *  Routine to write a PGM image file from a 2D floating point array
 *  x[nx][ny]. Because of the way C handles (or fails to handle!)
 *  multi-dimensional arrays we have to cast the pointer to void.
 */
-void pgmwrite(char *filename, Matrix<float>& img, float thresh);
+void pgmwrite(const char* filename, Matrix<float>& img, float thresh);
 

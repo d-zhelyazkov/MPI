@@ -1,1 +1,1 @@
-g++ -std=c++11 -o serial.out serial.cpp Commons.cpp ../tools/Tools.cpp ../tools/cio.cpp -lm
+g++ -std=c++11 -o serial.out serial.cpp Commons.cpp ../tools/Tools.cpp ../tools/cio.cpp ../tools/TimeTracker.cpp ImgReconstructProcess.cpp SerialImgReconstructProcess.cpp -lm

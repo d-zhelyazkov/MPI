@@ -1,19 +1,17 @@
 #include "MainImgReconstructProcess.h"
 #include "../tools/cio.h"
 #include "../tools/Tools.h"
+#include "Commons.h"
 
 void computeProcessesWork(int processes, int work, int*& sizes, int*& offsets, int k);
 
-void enchance(Matrix<float>& img);
-
 void MainImgReconstructProcess::initialize()
 {
-    Matrix<float>& wholeImg = *datread(mInputFile);
-    MPI_Comm& comm = *mProcess->getCommunicator();
+    Matrix<float>& wholeImg = *datread(mInputFile.c_str());
 
     /* Get communicator size */
     int processes;
-    MPI_Comm_size(comm, &processes);
+    MPI_Comm_size(mCommunicator, &processes);
     //Compute processes rows from the img
     int* processesPixels;
     int* processesPixelsOffsets;
@@ -23,13 +21,13 @@ void MainImgReconstructProcess::initialize()
 
     //spreading local images' sizes
     MPI_Scatter(processesPixels, 1, MPI_INT,
-        MPI_IN_PLACE, 0, MPI_INT, MAIN_PROC, comm);
-    MPI_Bcast(&cols, 1, MPI_INT, MAIN_PROC, comm);
+        MPI_IN_PLACE, 0, MPI_INT, MAIN_PROC, mCommunicator);
+    MPI_Bcast(&cols, 1, MPI_INT, MAIN_PROC, mCommunicator);
     //printf("MAIN: processes image sizes spread.\n");
 
     //spreading local part images
     MPI_Scatterv(wholeImg.ptr(), processesPixels, processesPixelsOffsets, MPI_FLOAT,
-        MPI_IN_PLACE, 0, MPI_FLOAT, MAIN_PROC, comm);
+        MPI_IN_PLACE, 0, MPI_FLOAT, MAIN_PROC, mCommunicator);
     //printf("MAIN: processes images scattered.\n");
 
     Matrix<float> localImg(processesPixels[MAIN_PROC] / cols, cols);
@@ -40,16 +38,14 @@ void MainImgReconstructProcess::initialize()
     deleteArray(processesPixels);
     deleteArray(processesPixelsOffsets);
     delete &wholeImg;
-    delete &comm;
 }
 
 void MainImgReconstructProcess::finalize()
 {
-    MPI_Comm& comm = *mProcess->getCommunicator();
-    Matrix<float>& img = *mProcess->getImg();
+    Matrix<float>& img = *mProcess->getImgPtr();
 
     int processesCnt;
-    MPI_Comm_size(comm, &processesCnt);
+    MPI_Comm_size(mCommunicator, &processesCnt);
     int cols = img.cols();
     float* imgArr = img.ptr() + cols;
     int imgArrSize = (img.size() - 2 * cols);
@@ -64,7 +60,7 @@ void MainImgReconstructProcess::finalize()
     //printf("MAIN: will gather whole image.\n");
     MPI_Gatherv(MPI_IN_PLACE, 0, MPI_FLOAT,
         wholeImage.ptr(), processesPixels, processesPixelOffsets, MPI_FLOAT,
-        MAIN_PROC, comm);
+        MAIN_PROC, mCommunicator);
     //printf("MAIN: whole image gathered.\n");
 
     float* wholeImgArr = wholeImage.ptr();
@@ -73,10 +69,8 @@ void MainImgReconstructProcess::finalize()
     enchance(wholeImage);
 
     //writing to file
-    pgmwrite(mOutputFile, wholeImage, THRESH);
+    pgmwrite(mOutputFile.c_str(), wholeImage, THRESH);
 
-    delete &img;
-    delete &comm;
     deleteArray(processesPixels);
     deleteArray(processesPixelOffsets);
 }
@@ -95,16 +89,4 @@ void computeProcessesWork(int processes, int work, int*& sizes, int*& offsets, i
         //printf("%d:\twork: %d\toffset: %d\n", i, size, currOffset);
         currOffset += size;
     }
-}
-
-void enchance(Matrix<float>& img) {
-    /*
-    *  Find the max and min absolute values of the array
-    */
-    float* x = img.ptr();
-    int N = img.size();
-    float xmin = arrayAbsMin(x, N);
-    float xmax = arrayAbsMax(x, N);
-
-    encahnceImg(x, N, xmin, xmax, THRESH);
 }

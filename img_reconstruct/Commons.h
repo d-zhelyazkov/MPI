@@ -1,8 +1,14 @@
 #pragma once
-#include<time.h>
+#include"../tools/Matrix.h"
+#include <string>
+
+using std::string;
+
+#define THRESH 255
 
 void checkARGV(int argc, char **argv);
 
-char* getOutputFileName(char* inputFile, int iterations, char* tag);
+string* getOutputFileName(char* inputFile, int iterations, const char* tag);
 
-double clockToS(clock_t clock);
+void enchance(Matrix<float>& img);
+

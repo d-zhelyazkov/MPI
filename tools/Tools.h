@@ -1,9 +1,19 @@
 #pragma once
 #include <string.h>
 #include <stdlib.h>
+#include <vector>
 
-#define deleteArray(arr) if(arr != NULL) {delete[] arr; arr = NULL;}
-#define deleteObject(obj) if(obj != NULL) {delete obj; obj = NULL;}
+template <typename T>
+void deleteArray(T*& arr) { if (arr != NULL) { delete[] arr; arr = NULL; } }
+template <typename T>
+void deleteObject(T*& obj) { if (obj != NULL) { delete obj; obj = NULL; } }
+
+template <typename T>
+void deleteObjects(std::vector<T*>& objects)
+{
+    for (T* obj : objects)
+        deleteObject(obj);
+}
 
 template <typename T>
 T* calloc(unsigned size) {
@@ -35,5 +45,3 @@ float arrayAbsMin(float* arr, int N);
 float arrayAbsMax(float* arr, int N);
 
 void encahnceImg(float* img, int size, float min, float max, float thresh);
-
-

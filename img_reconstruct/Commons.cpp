@@ -14,12 +14,20 @@ void checkARGV(int argc, char **argv) {
     }
 }
 
-char* getOutputFileName(char* inputFile, int iterations, char* tag) {
+string* getOutputFileName(char* inputFile, int iterations, const char* tag) {
     char* fileName = new char[FILE_NAME_SIZE];
     snprintf(fileName, FILE_NAME_SIZE, "%s_%d_%s.pgm", inputFile, iterations, tag);
-    return fileName;
+    return new string(fileName);
 }
 
-double clockToS(clock_t clock) {
-    return (double)clock / CLOCKS_PER_SEC;
+void enchance(Matrix<float>& img) {
+    /*
+    *  Find the max and min absolute values of the array
+    */
+    float* x = img.ptr();
+    int N = img.size();
+    float xmin = arrayAbsMin(x, N);
+    float xmax = arrayAbsMax(x, N);
+
+    encahnceImg(x, N, xmin, xmax, THRESH);
 }
