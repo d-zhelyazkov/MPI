@@ -28,13 +28,8 @@ T* cloneArray(T* arr, unsigned size) {
 }
 
 template<typename T>
-void copyArray(T*& dest, T* src, unsigned size) {
-    if (dest == NULL) { 
-        dest = cloneArray(src, size);
-    }
-    else {
-        memcpy(dest, src, size * sizeof(T));
-    }
+void copyArray(T* dest, T* src, unsigned size) {
+    memcpy(dest, src, size * sizeof(T));
 }
 
 /*
