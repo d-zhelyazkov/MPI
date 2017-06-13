@@ -5,9 +5,11 @@
 
 int main(int argc, char **argv)
 {
+    checkARGV(argc, argv);
+
     int iterations = atoi(argv[2]);
     string inputFile = string(argv[1]);
-    string* outputFile = getOutputFileName(argv[1], iterations, "serial");
+    string* outputFile = getOutputFileName(inputFile, iterations, "serial");
 
     GLProcess glProcess;
     SerialGLProcess serialProcess(glProcess, inputFile, *outputFile);

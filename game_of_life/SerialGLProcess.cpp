@@ -3,7 +3,7 @@
 
 void SerialGLProcess::initialize()
 {
-    Matrix<char>* inputData = readFile(mInputFile.c_str());
+    Matrix<char>* inputData = readFile(mInputFile);
     Matrix<bool>* board = convertToBool(*inputData);
     mProcess->setBoard(*board);
 
@@ -19,7 +19,7 @@ void SerialGLProcess::finalize()
 
     Matrix<bool>* board = mProcess->getBoardPtr();
     Matrix<char>* outputData = convertToChar(*board);
-    writeFile(mOutputFile.c_str(), *outputData);
+    writeFile(mOutputFile, *outputData);
 
     deleteObject(outputData);
 }

@@ -3,7 +3,17 @@
 
 #define TRUE_CHAR 'O'
 #define FALSE_CHAR '.'
+#define ARGV_EXP "Expected arguments: <input_file.dat> <iterations>\n"
 
+#define FILE_NAME_SIZE 256
+
+void checkARGV(int argc, char **argv) {
+    if (argc != 3) {
+        printf("Expected 2 argv params, but got %d\n", argc - 1);
+        printf(ARGV_EXP);
+        exit(1);
+    }
+}
 Matrix<bool>* convertToBool(Matrix<char>& matrix)
 {
     Matrix<bool>* result = new Matrix<bool>(matrix.rows(), matrix.cols());
@@ -39,15 +49,16 @@ Matrix<char>* convertToChar(Matrix<bool>& matrix)
     return result;
 }
 
-Matrix<char>* readFile(const char* fileName) {
-    FILE* fp = fopen(fileName, "r");
+Matrix<char>* readFile(string& fileName) {
+    FILE* fp = fopen(fileName.c_str(), "r");
     if (fp == NULL) {
-        printf("Cannot open file '%s'.", fileName);
+        printf("Cannot open file '%s'.", fileName.c_str());
         return NULL;
     }
 
     int rows, cols;
-    fscanf(fp, "%d %d\n", &cols, &rows);
+    //fscanf(fp, "%d %d\n", &cols, &rows);
+    parseWH(fileName, cols, rows);
     Matrix<char>* result = new Matrix<char>(rows, cols);
 
     int buffSize = cols + 2;
@@ -62,14 +73,14 @@ Matrix<char>* readFile(const char* fileName) {
     return result;
 }
 
-void writeFile(const char* fileName, Matrix<char>& matrix) {
-    FILE* fp = fopen(fileName, "w");
+void writeFile(string& fileName, Matrix<char>& matrix) {
+    FILE* fp = fopen(fileName.c_str(), "w");
     if (fp == NULL) {
-        printf("Cannot open file '%s'.", fileName);
+        printf("Cannot open file '%s'.", fileName.c_str());
         return;
     }
 
-    fprintf(fp, "%d %d\n", matrix.cols(), matrix.rows());
+    //fprintf(fp, "%d %d\n", matrix.cols(), matrix.rows());
 
     int buffSize = matrix.cols() + 1;
     char* buff = new char[buffSize];
@@ -82,10 +93,20 @@ void writeFile(const char* fileName, Matrix<char>& matrix) {
     fclose(fp);
 }
 
-#define FILE_NAME_SIZE 256
-
-string* getOutputFileName(char* inputFile, int iterations, const char* tag) {
+string* getOutputFileName(string& inputFile, int iterations, const char* tag) {
     char* fileName = new char[FILE_NAME_SIZE];
-    snprintf(fileName, FILE_NAME_SIZE, "%s_%d_%s", inputFile, iterations, tag);
+    snprintf(fileName, FILE_NAME_SIZE, "%s_%d_%s", inputFile.c_str(), iterations, tag);
     return new string(fileName);
+}
+
+void parseWH(string fileName, int & width, int & height)
+{
+    int i = fileName.find_last_of('_');
+    string heightStr = fileName.substr(i + 1, fileName.size() - i - 1);
+    height = std::stoi(heightStr);
+
+    fileName = fileName.substr(0, i);
+    i = fileName.find_last_of('_');
+    string widthStr = fileName.substr(i + 1, fileName.size() - i - 1);
+    width = std::stoi(widthStr);
 }

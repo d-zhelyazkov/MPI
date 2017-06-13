@@ -14,7 +14,7 @@ close($input);
 
 my $outFile = join('_', $file, $width, $height);
 open (my $output, ">", $outFile);
-print $output "$width $height\n";
+#print $output "$width $height\n";
 
 my $lines = @data;
 my $blankLines = ($height - $lines) / 2;

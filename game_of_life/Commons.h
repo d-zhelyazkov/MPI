@@ -4,12 +4,16 @@
 
 using std::string;
 
+void checkARGV(int argc, char **argv);
+
 Matrix<bool>* convertToBool(Matrix<char>& matrix);
 
 Matrix<char>* convertToChar(Matrix<bool>& matrix);
 
-Matrix<char>* readFile(const char* fileName);
+Matrix<char>* readFile(string& fileName);
 
-void writeFile(const char* fileName, Matrix<char>& matrix);
+void writeFile(string& fileName, Matrix<char>& matrix);
 
-string* getOutputFileName(char* inputFile, int iterations, const char* tag);
+string* getOutputFileName(string& inputFile, int iterations, const char* tag);
+
+void parseWH(string fileName, int& width, int& height);
