@@ -48,3 +48,21 @@ void encahnceImg(float* img, int size, float min, float max, float thresh) {
         img[i] = thresh * sqrt(img[i] / thresh);
     }
 }
+
+void computeProcessWork(int processes, int rank, int globalWork,
+    int & localWork, int & workOffset)
+{
+    localWork = globalWork / processes;
+    workOffset = rank * localWork;
+
+    int reminder = globalWork % processes;
+    if (reminder) {
+        if (rank < reminder) {
+            localWork++;
+            workOffset += rank;
+        }
+        else {
+            workOffset += reminder;
+        }
+    }
+}

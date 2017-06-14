@@ -5,8 +5,6 @@
 
 #define DIMS 2
 
-void computeProcessesWork(int processes, int work, int*& sizes, int*& offsets);
-
 int main(int argc, char **argv)
 {
     /* Initialize MPI environment */
@@ -29,11 +27,11 @@ int main(int argc, char **argv)
     MPI_Cart_shift(communicator, 1, 1, &up, &down);
 
     if (!rank) {
-        printf("Cart %dx%d\n", dims[0], dims[1]);
+        printf("Cart %dx%d\n", dims[1], dims[0]);
     }
     int coords[DIMS];
     MPI_Cart_coords(communicator, rank, DIMS, coords);
-    printf("P%d: %dx%d\n", rank, coords[0], coords[1]);
+    printf("P%d: %dx%d\n", rank, coords[1], coords[0]);
     printf("P%d:\tl: %d\tr: %d\tu: %d\td: %d\n", rank, left, right, up, down);
     
     
@@ -43,45 +41,38 @@ int main(int argc, char **argv)
     if (!rank) {
         printf("Input %dx%d\n", width, height);
     }
-    int* localWidths, *widthsOffsets;
-    computeProcessesWork(dims[0], width, localWidths, widthsOffsets);
-    int localWidth = localWidths[coords[0]];
-    int widthOffset = widthsOffsets[coords[0]];
-    deleteArray(localWidths);
-    deleteArray(widthsOffsets);
 
-    int* localHeights, *heightsOffsets;
-    computeProcessesWork(dims[1], height, localHeights, heightsOffsets);
-    int localHeight = localHeights[coords[1]];
-    int heightOffset = heightsOffsets[coords[1]];
-    deleteArray(localHeights);
-    deleteArray(heightsOffsets);
+    int localWidth, widthOffset;
+    computeProcessWork(dims[0], coords[0], width, localWidth, widthOffset);
+    int localHeight, heightOffset;
+    computeProcessWork(dims[1], coords[1], height, localHeight, heightOffset);
     
     printf("P%d: Local data - %dx%d\n", rank, localWidth, localHeight);
     printf("P%d: Start point - %dx%d\n", rank , widthOffset, heightOffset);
 
+    MPI_Datatype row;
+    MPI_Type_contiguous(localWidth, MPI_CHAR, &row);
+    MPI_Type_commit(&row);
 
+    MPI_Datatype fileView;
+    MPI_Type_vector(localHeight, localWidth, width + 1, MPI_CHAR, &fileView);
+    MPI_Type_commit(&fileView);
 
-    /*MPI_File file;
+    MPI_File file;
     MPI_File_open(communicator, argv[1], MPI_MODE_RDONLY, MPI_INFO_NULL, &file);
-    MPI_File_read*/
+    MPI_File_set_view(file, (heightOffset * (width + 1)) + widthOffset,
+        MPI_CHAR, fileView, "native", MPI_INFO_NULL);
 
+    char* input = new char[localWidth + 1];
+    MPI_File_read_all(file, input, 1, row, MPI_STATUS_IGNORE);
+    input[localWidth] = 0;
+    printf("P%d Line: '%s'\n", rank, input);
+
+    deleteArray(input);
+    MPI_File_close(&file);
+    MPI_Type_free(&row);
+    MPI_Type_free(&fileView);
     MPI_Finalize();
 
     return 0;
-}
-
-void computeProcessesWork(int processes, int work, int*& sizes, int*& offsets) {
-    sizes = new int[processes];
-    offsets = new int[processes];
-    int currOffset = 0;
-    int reminders = work % processes;
-    int N = work / processes;
-    for (int i = 0; i < processes; i++) {
-        int size = (i < reminders) ? N + 1 : N;
-        sizes[i] = size;
-        offsets[i] = currOffset;
-        //printf("%d:\twork: %d\toffset: %d\n", i, size, currOffset);
-        currOffset += size;
-    }
 }

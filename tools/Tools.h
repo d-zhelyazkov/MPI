@@ -40,3 +40,5 @@ float arrayAbsMin(float* arr, int N);
 float arrayAbsMax(float* arr, int N);
 
 void encahnceImg(float* img, int size, float min, float max, float thresh);
+
+void computeProcessWork(int processes, int rank, int globalWork, int& localWork, int& workOffset);

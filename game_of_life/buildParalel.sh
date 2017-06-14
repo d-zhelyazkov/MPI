@@ -1,1 +1,1 @@
-mpic++ -std=c++11 -o parallel.out parallel.cpp Commons.cpp
+mpic++ -std=c++11 -o parallel.out parallel.cpp Commons.cpp ../tools/Tools.cpp

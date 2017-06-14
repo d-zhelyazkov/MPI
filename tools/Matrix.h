@@ -38,6 +38,7 @@ public:
         unsigned newSize = matrix.size();
         if (oldSize != newSize) {
             deleteArray(mArray);
+            mArray = calloc<T>(newSize);
         }
         copyArray(mArray, matrix.mArray, newSize);
 
