@@ -50,21 +50,35 @@ void MPIGLProcess::initialize()
     MPI_Type_contiguous(localWidth, MPI_CHAR, &row);
     MPI_Type_commit(&row);
 
-    Matrix<char> localBoard(localHeight, localWidth);
-    MPI_File_read_all(file, localBoard.ptr(), localHeight, row, MPI_STATUS_IGNORE);
-    
-    char* firstLine = new char[localWidth + 1];
-    copyArray(firstLine, localBoard.getRowPtr(0), localWidth);
-    firstLine[localWidth] = 0;
-    printf("P%d: First line: %s\n", mRank, firstLine);
+    Matrix<char> inputBoard(localHeight, localWidth);
+    MPI_File_read_all(file, inputBoard.ptr(), localHeight, row, MPI_STATUS_IGNORE);
+
+    Matrix<bool>& localBoard = *convertToBool(inputBoard);
+    mProcess->setBoard(localBoard);
+
 
     MPI_File_close(&file);
     MPI_Type_free(&row);
     MPI_Type_free(&fileView);
-    MPI_Finalize();
 
-    deleteArray(firstLine);
+    deleteObject(localBoard);
     deleteArray(dims);
     deleteArray(coords);
     deleteArray(periods);
+}
+
+void MPIGLProcess::finalize()
+{
+    Matrix<bool>& localBoard = *(mProcess->getBoard());
+    Matrix<char>* outBoard = convertToChar(localBoard);
+    int cols = outBoard->cols();
+
+    char* firstLine = new char[cols + 1];
+    copyArray(firstLine, outBoard->getRowPtr(0), cols);
+    firstLine[cols] = 0;
+    printf("P%d: First line: %s\n", mRank, firstLine);
+
+    deleteArray(firstLine);
+    deleteObject(outBoard);
+    deleteObject(localBoard);
 }

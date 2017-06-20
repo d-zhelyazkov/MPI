@@ -35,3 +35,18 @@ void GLProcess::processData()
 
     board = buff;
 }
+
+Matrix<bool>* GLProcess::getBoard()
+{
+    int rows = mBoard->rows() - 2;
+    int cols = mBoard->cols() - 2;
+
+    Matrix<bool>* result = new Matrix<bool>(rows, cols);
+    for (int i = 0; i < rows; i++) {
+        bool* boardRow = mBoard->getRowPtr(i + 1) + 1;
+        bool* processedRow = result->getRowPtr(i);
+        copyArray(processedRow, boardRow, cols);
+    }
+
+    return result;
+}

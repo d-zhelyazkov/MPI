@@ -17,9 +17,10 @@ void SerialGLProcess::finalize()
 {
     ProcessDecorator::finalize();
 
-    Matrix<bool>* board = mProcess->getBoardPtr();
+    Matrix<bool>* board = mProcess->getBoard();
     Matrix<char>* outputData = convertToChar(*board);
     writeFile(mOutputFile, *outputData);
 
     deleteObject(outputData);
+    deleteObject(board);
 }

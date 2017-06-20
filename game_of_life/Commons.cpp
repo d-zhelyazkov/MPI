@@ -19,7 +19,6 @@ Matrix<bool>* convertToBool(Matrix<char>& matrix)
     Matrix<bool>* result = new Matrix<bool>(matrix.rows(), matrix.cols());
     for (int i = 0; i < matrix.rows(); i++) {
         for (int j = 0; j < matrix.cols(); j++) {
-            //(*result)(i, j) = (matrix(i, j) == TRUE_CHAR);
             switch (matrix(i, j)) {
             case TRUE_CHAR:
                 (*result)(i, j) = true;

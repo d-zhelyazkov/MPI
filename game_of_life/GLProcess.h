@@ -28,8 +28,6 @@ public:
         return new GLProcess();
     }
 
-    Matrix<bool>* getBoardPtr() {
-        return mBoard;
-    }
+    Matrix<bool>* getBoard();
 };
 

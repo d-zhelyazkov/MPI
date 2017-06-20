@@ -7,6 +7,8 @@ template <typename T>
 void deleteArray(T*& arr) { if (arr != NULL) { delete[] arr; arr = NULL; } }
 template <typename T>
 void deleteObject(T*& obj) { if (obj != NULL) { delete obj; obj = NULL; } }
+template <typename T>
+void deleteObject(T& obj) { delete &obj; }
 
 template <typename T>
 void deleteObjects(std::vector<T*>& objects)

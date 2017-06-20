@@ -29,7 +29,7 @@ public:
     
     virtual void initialize();
 
-    virtual void finalize() {}
+    virtual void finalize();
 
     void syncData() {}
 

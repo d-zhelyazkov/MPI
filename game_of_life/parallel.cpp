@@ -23,10 +23,16 @@ int main(int argc, char **argv)
     MPI_Cart_create(MPI_COMM_WORLD, DIMS, dims, periods, true, &communicator);
     
     string inputFile(argv[1]);
-    string outFile("");
+    int iterations = atoi(argv[2]);
+    string& outFile = *getOutputFileName(inputFile, iterations, "parallel");
     GLProcess glProcess;
     MPIGLProcess process(glProcess, inputFile, outFile, communicator);
     process.initialize();
 
+    process.finalize();
+
+    MPI_Finalize();
+
+    deleteObject(outFile);
     return 0;
 }
