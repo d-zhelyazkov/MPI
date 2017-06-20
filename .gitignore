@@ -264,3 +264,4 @@ paket-files/
 *.filters
 *.sln
 /game_of_life/breeder1_1000_500
+/*.sln
