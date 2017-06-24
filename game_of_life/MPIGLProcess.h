@@ -17,6 +17,9 @@ private:
 
     int mRank, mLeftProc, mRightProc, mUpProc, mDownProc;
 
+    int mFileOffset;
+    bool mLastRowProcess;
+
 public:
     MPIGLProcess(GLProcess& process, string& inputFile, string& outputFile, MPI_Comm& communicator) :
         ProcessDecorator(process),

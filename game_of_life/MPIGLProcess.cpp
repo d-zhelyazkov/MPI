@@ -3,6 +3,9 @@
 #include "Commons.h"
 #include "../tools/Matrix.h"
 
+
+void appendNewlines(Matrix<char>*& matrix);
+
 void MPIGLProcess::initialize()
 {
     MPI_Comm_rank(mCommunicator, &mRank);
@@ -11,10 +14,10 @@ void MPIGLProcess::initialize()
 
     int dimsCnt;
     MPI_Cartdim_get(mCommunicator, &dimsCnt);
-    int* coords = new int[dimsCnt];
-    int* dims = new int[dimsCnt];
-    int* periods = new int[dimsCnt];
-    MPI_Cart_get(mCommunicator, dimsCnt, dims, periods, coords);
+    std::vector<int> coords(dimsCnt);
+    std::vector<int> dims(dimsCnt);
+    std::vector<int> periods(dimsCnt, false);
+    MPI_Cart_get(mCommunicator, dimsCnt, &dims[0], &periods[0], &coords[0]);
 
     printf("P%d: %dx%d\n", mRank, coords[1], coords[0]);
     printf("P%d:\tl: %d\tr: %d\tu: %d\td: %d\n", mRank, mLeftProc, mRightProc, mUpProc, mDownProc);
@@ -30,55 +33,87 @@ void MPIGLProcess::initialize()
 
     int localWidth, widthOffset;
     computeProcessWork(dims[0], coords[0], width, localWidth, widthOffset);
+    mLastRowProcess = ((coords[0] + 1) == dims[0]);
+
     int localHeight, heightOffset;
     computeProcessWork(dims[1], coords[1], height, localHeight, heightOffset);
-
     printf("P%d: Local data - %dx%d\n", mRank, localWidth, localHeight);
     printf("P%d: Start point - %dx%d\n", mRank, widthOffset, heightOffset);
 
-
+    Matrix<char> inputBoard(localHeight, localWidth);
+    
     MPI_Datatype fileView;
     MPI_Type_vector(localHeight, localWidth, width + 1, MPI_CHAR, &fileView);
     MPI_Type_commit(&fileView);
 
     MPI_File file;
     MPI_File_open(mCommunicator, &mInputFile[0], MPI_MODE_RDONLY, MPI_INFO_NULL, &file);
-    int fileOffset = (heightOffset * (width + 1)) + widthOffset;
-    MPI_File_set_view(file, fileOffset, MPI_CHAR, fileView, "native", MPI_INFO_NULL);
 
-    MPI_Datatype row;
-    MPI_Type_contiguous(localWidth, MPI_CHAR, &row);
-    MPI_Type_commit(&row);
+    mFileOffset = (heightOffset * (width + 1)) + widthOffset;
+    MPI_File_set_view(file, mFileOffset, MPI_CHAR, fileView, "native", MPI_INFO_NULL);
 
-    Matrix<char> inputBoard(localHeight, localWidth);
-    MPI_File_read_all(file, inputBoard.ptr(), localHeight, row, MPI_STATUS_IGNORE);
+    MPI_File_read(file, inputBoard.ptr(), inputBoard.size(), MPI_CHAR, MPI_STATUS_IGNORE);
+
+    MPI_File_close(&file);
 
     Matrix<bool>& localBoard = *convertToBool(inputBoard);
     mProcess->setBoard(localBoard);
 
-
-    MPI_File_close(&file);
-    MPI_Type_free(&row);
     MPI_Type_free(&fileView);
 
     deleteObject(localBoard);
-    deleteArray(dims);
-    deleteArray(coords);
-    deleteArray(periods);
 }
 
 void MPIGLProcess::finalize()
 {
     Matrix<bool>& localBoard = *(mProcess->getBoard());
     Matrix<char>* outBoard = convertToChar(localBoard);
-    int cols = outBoard->cols();
+    if (mLastRowProcess) {
+        appendNewlines(outBoard);
+    }
 
-    char* firstLine = new char[cols + 1];
-    copyArray(firstLine, outBoard->getRowPtr(0), cols);
-    firstLine[cols] = 0;
-    printf("P%d: First line: %s\n", mRank, firstLine);
+    int localWidth = outBoard->cols();
+    int localHeight = outBoard->rows();
+    printf("P%d: Preparing to write board %dx%d\n", mRank, localWidth, localHeight);
+    
+    int width, height;
+    parseWH(mInputFile, width, height);
+    
+    MPI_Datatype fileView;
+    MPI_Type_vector(localHeight, localWidth, width + 1, MPI_CHAR, &fileView);
+    MPI_Type_commit(&fileView);
 
-    deleteArray(firstLine);
+    MPI_File file;
+    MPI_File_open(mCommunicator, &mOutputFile[0], MPI_MODE_WRONLY | MPI_MODE_CREATE,
+        MPI_INFO_NULL, &file);
+    MPI_File_set_view(file, mFileOffset, MPI_CHAR, fileView,
+        "native", MPI_INFO_NULL);
+
+    printf("P%d: Writing board in file from %d\n", mRank, mFileOffset);
+    MPI_File_write_all(file, outBoard->ptr(), outBoard->size(), MPI_CHAR,
+        MPI_STATUS_IGNORE);
+    printf("P%d: Write completed.\n", mRank);
+
+    MPI_File_close(&file);
+
+    MPI_Type_free(&fileView);
+
     deleteObject(outBoard);
     deleteObject(localBoard);
+}
+
+void appendNewlines(Matrix<char>*& matrix) {
+    int rows = matrix->rows();
+    int cols = matrix->cols();
+    Matrix<char>* result = new Matrix<char>(rows, cols + 1);
+
+    for (int i = 0; i < rows; i++) {
+        char* resultLine = result->getRowPtr(i);
+        char* line = matrix->getRowPtr(i);
+        copyArray(resultLine, line, cols);
+        resultLine[cols] = '\n';
+    }
+
+    deleteObject(matrix);
+    matrix = result;
 }
