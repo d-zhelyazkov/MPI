@@ -20,6 +20,8 @@ private:
     int mFileOffset;
     bool mLastRowProcess;
 
+    MPI_Datatype mColumnType;
+
 public:
     MPIGLProcess(GLProcess& process, string& inputFile, string& outputFile, MPI_Comm& communicator) :
         ProcessDecorator(process),
@@ -34,7 +36,7 @@ public:
 
     virtual void finalize();
 
-    void syncData() {}
+    void syncData();
 
     virtual void processData() {
         ProcessDecorator::processData();
@@ -45,5 +47,8 @@ public:
     virtual MPIGLProcess* clone() {
         return new MPIGLProcess(*mProcess, mInputFile, mOutputFile, mCommunicator);
     }
+
+private:
+    void setColumnType();
 };
 

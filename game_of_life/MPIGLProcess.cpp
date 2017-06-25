@@ -3,6 +3,7 @@
 #include "Commons.h"
 #include "../tools/Matrix.h"
 
+char NATIVE[] = "native";
 
 void appendNewlines(Matrix<char>*& matrix);
 
@@ -38,26 +39,32 @@ void MPIGLProcess::initialize()
     int localHeight, heightOffset;
     computeProcessWork(dims[1], coords[1], height, localHeight, heightOffset);
     printf("P%d: Local data - %dx%d\n", mRank, localWidth, localHeight);
-    printf("P%d: Start point - %dx%d\n", mRank, widthOffset, heightOffset);
+    printf("P%d: Start point - %dx%d\n", mRank, heightOffset, widthOffset);
 
     Matrix<char> inputBoard(localHeight, localWidth);
     
     MPI_Datatype fileView;
-    MPI_Type_vector(localHeight, localWidth, width + 1, MPI_CHAR, &fileView);
+    MPI_Type_vector(localHeight, localWidth, width + 1, MPI_CHAR, 
+        &fileView);
     MPI_Type_commit(&fileView);
 
     MPI_File file;
-    MPI_File_open(mCommunicator, &mInputFile[0], MPI_MODE_RDONLY, MPI_INFO_NULL, &file);
+    MPI_File_open(mCommunicator, &mInputFile[0], MPI_MODE_RDONLY, 
+        MPI_INFO_NULL, &file);
 
     mFileOffset = (heightOffset * (width + 1)) + widthOffset;
-    MPI_File_set_view(file, mFileOffset, MPI_CHAR, fileView, "native", MPI_INFO_NULL);
+    MPI_File_set_view(file, mFileOffset, MPI_CHAR, fileView, 
+        NATIVE, MPI_INFO_NULL);
 
-    MPI_File_read(file, inputBoard.ptr(), inputBoard.size(), MPI_CHAR, MPI_STATUS_IGNORE);
+    MPI_File_read(file, inputBoard.ptr(), inputBoard.size(), MPI_CHAR, 
+        MPI_STATUS_IGNORE);
 
     MPI_File_close(&file);
 
     Matrix<bool>& localBoard = *convertToBool(inputBoard);
     mProcess->setBoard(localBoard);
+
+    setColumnType();
 
     MPI_Type_free(&fileView);
 
@@ -87,7 +94,7 @@ void MPIGLProcess::finalize()
     MPI_File_open(mCommunicator, &mOutputFile[0], MPI_MODE_WRONLY | MPI_MODE_CREATE,
         MPI_INFO_NULL, &file);
     MPI_File_set_view(file, mFileOffset, MPI_CHAR, fileView,
-        "native", MPI_INFO_NULL);
+        NATIVE, MPI_INFO_NULL);
 
     printf("P%d: Writing board in file from %d\n", mRank, mFileOffset);
     MPI_File_write_all(file, outBoard->ptr(), outBoard->size(), MPI_CHAR,
@@ -97,9 +104,42 @@ void MPIGLProcess::finalize()
     MPI_File_close(&file);
 
     MPI_Type_free(&fileView);
+    MPI_Type_free(&mColumnType);
 
     deleteObject(outBoard);
     deleteObject(localBoard);
+}
+
+void MPIGLProcess::syncData()
+{
+    Matrix<bool>& board = *(mProcess->getBoardPtr());
+    int width = board.cols();
+    int height = board.rows();
+
+    MPI_Sendrecv(&board(0, width - 2), 1, mColumnType, mRightProc, 0,
+        &board(0, 0), 1, mColumnType, mLeftProc, 0,
+        mCommunicator, MPI_STATUS_IGNORE);
+    MPI_Sendrecv(&board(0, 1), 1, mColumnType, mLeftProc, 0,
+        &board(0, width - 1), 1, mColumnType, mRightProc, 0,
+        mCommunicator, MPI_STATUS_IGNORE);
+
+    MPI_Sendrecv(&board(height - 2, 0), width, MPI_C_BOOL, mDownProc, 0,
+        &board(0, 0), width, MPI_C_BOOL, mUpProc, 0,
+        mCommunicator, MPI_STATUS_IGNORE);
+    MPI_Sendrecv(&board(1, 0), width, MPI_C_BOOL, mUpProc, 0,
+        &board(height - 1, 0), width, MPI_C_BOOL, mDownProc, 0,
+        mCommunicator, MPI_STATUS_IGNORE);
+}
+
+void MPIGLProcess::setColumnType()
+{
+    Matrix<bool>* board = mProcess->getBoardPtr();
+    int boardWidth = board->cols();
+    int boardHeight = board->rows();
+
+    MPI_Type_vector(boardHeight, 1, boardWidth,
+        MPI_C_BOOL, &mColumnType);
+    MPI_Type_commit(&mColumnType);
 }
 
 void appendNewlines(Matrix<char>*& matrix) {

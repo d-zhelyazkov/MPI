@@ -29,5 +29,9 @@ public:
     }
 
     Matrix<bool>* getBoard();
+
+    Matrix<bool>* getBoardPtr() {
+        return mBoard;
+    }
 };
 

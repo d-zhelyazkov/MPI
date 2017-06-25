@@ -13,6 +13,10 @@ int main(int argc, char **argv)
     MPI_Init(&argc, &argv);
     checkARGV(argc, argv);
 
+    string inputFile(argv[1]);
+    int iterations = atoi(argv[2]);
+    string& outFile = *getOutputFileName(inputFile, iterations, "parallel");
+
     /* Get communicator size */
     int processes;
     MPI_Comm_size(MPI_COMM_WORLD, &processes);
@@ -22,10 +26,6 @@ int main(int argc, char **argv)
     MPI_Comm communicator;
     int periods[DIMS] = { 0 };
     MPI_Cart_create(MPI_COMM_WORLD, DIMS, dims, periods, true, &communicator);
-    
-    string inputFile(argv[1]);
-    int iterations = atoi(argv[2]);
-    string& outFile = *getOutputFileName(inputFile, iterations, "parallel");
     
     GLProcess glProcess;
     MPIGLProcess* mpiProcess = new MPIGLProcess(glProcess, inputFile, outFile, communicator);
@@ -41,7 +41,9 @@ int main(int argc, char **argv)
     }
 
     process->initialize();
-
+    for (int i = 0; i < iterations; i++) {
+        process->processData();
+    }
     process->finalize();
 
     MPI_Finalize();
