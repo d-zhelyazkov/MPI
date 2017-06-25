@@ -21,11 +21,11 @@ int main(int argc, char **argv)
     int processes;
     MPI_Comm_size(MPI_COMM_WORLD, &processes);
 
-    int dims[DIMS] = { 0 };
-    MPI_Dims_create(processes, DIMS, dims);
+    vector<int> dims(DIMS, 0);
+    MPI_Dims_create(processes, DIMS, &dims[0]);
     MPI_Comm communicator;
-    int periods[DIMS] = { 0 };
-    MPI_Cart_create(MPI_COMM_WORLD, DIMS, dims, periods, true, &communicator);
+    vector<int> periods(DIMS, 0);
+    MPI_Cart_create(MPI_COMM_WORLD, DIMS, &dims[0], &periods[0], true, &communicator);
     
     GLProcess glProcess;
     MPIGLProcess* mpiProcess = new MPIGLProcess(glProcess, inputFile, outFile, communicator);
@@ -36,7 +36,7 @@ int main(int argc, char **argv)
     if (rank) {
         process = mpiProcess;
     } else {
-        process = new MainProcess(*mpiProcess);
+        process = new MainProcess(*mpiProcess, ITER_NOTIFICATION);
         deleteObject(mpiProcess);
     }
 

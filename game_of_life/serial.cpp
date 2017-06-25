@@ -13,7 +13,7 @@ int main(int argc, char **argv)
 
     GLProcess glProcess;
     SerialGLProcess serialProcess(glProcess, inputFile, *outputFile);
-    MainProcess mainProcess(serialProcess);
+    MainProcess mainProcess(serialProcess, ITER_NOTIFICATION);
     mainProcess.initialize();
     for (int k = 1; k <= iterations; k++) {
         mainProcess.processData();

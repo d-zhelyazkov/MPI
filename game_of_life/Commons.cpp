@@ -14,9 +14,9 @@ void checkARGV(int argc, char **argv) {
         exit(1);
     }
 }
-Matrix<bool>* convertToBool(Matrix<char>& matrix)
+Matrix<char>* convertToBool(Matrix<char>& matrix)
 {
-    Matrix<bool>* result = new Matrix<bool>(matrix.rows(), matrix.cols());
+    Matrix<char>* result = new Matrix<char>(matrix.rows(), matrix.cols());
     for (int i = 0; i < matrix.rows(); i++) {
         for (int j = 0; j < matrix.cols(); j++) {
             switch (matrix(i, j)) {
@@ -35,7 +35,7 @@ Matrix<bool>* convertToBool(Matrix<char>& matrix)
     return result;
 }
 
-Matrix<char>* convertToChar(Matrix<bool>& matrix)
+Matrix<char>* convertToChar(Matrix<char>& matrix)
 {
     Matrix<char>* result = new Matrix<char>(matrix.rows(), matrix.cols());
 

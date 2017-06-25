@@ -4,7 +4,7 @@
 void SerialGLProcess::initialize()
 {
     Matrix<char>* inputData = readFile(mInputFile);
-    Matrix<bool>* board = convertToBool(*inputData);
+    Matrix<char>* board = convertToBool(*inputData);
     mProcess->setBoard(*board);
 
     ProcessDecorator::initialize();
@@ -17,7 +17,7 @@ void SerialGLProcess::finalize()
 {
     ProcessDecorator::finalize();
 
-    Matrix<bool>* board = mProcess->getBoard();
+    Matrix<char>* board = mProcess->getBoard();
     Matrix<char>* outputData = convertToChar(*board);
     writeFile(mOutputFile, *outputData);
 

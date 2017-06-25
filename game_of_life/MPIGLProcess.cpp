@@ -61,7 +61,7 @@ void MPIGLProcess::initialize()
 
     MPI_File_close(&file);
 
-    Matrix<bool>& localBoard = *convertToBool(inputBoard);
+    Matrix<char>& localBoard = *convertToBool(inputBoard);
     mProcess->setBoard(localBoard);
 
     setColumnType();
@@ -73,7 +73,7 @@ void MPIGLProcess::initialize()
 
 void MPIGLProcess::finalize()
 {
-    Matrix<bool>& localBoard = *(mProcess->getBoard());
+    Matrix<char>& localBoard = *(mProcess->getBoard());
     Matrix<char>* outBoard = convertToChar(localBoard);
     if (mLastRowProcess) {
         appendNewlines(outBoard);
@@ -112,7 +112,7 @@ void MPIGLProcess::finalize()
 
 void MPIGLProcess::syncData()
 {
-    Matrix<bool>& board = *(mProcess->getBoardPtr());
+    Matrix<char>& board = *(mProcess->getBoardPtr());
     int width = board.cols();
     int height = board.rows();
 
@@ -123,22 +123,22 @@ void MPIGLProcess::syncData()
         &board(0, width - 1), 1, mColumnType, mRightProc, 0,
         mCommunicator, MPI_STATUS_IGNORE);
 
-    MPI_Sendrecv(&board(height - 2, 0), width, MPI_C_BOOL, mDownProc, 0,
-        &board(0, 0), width, MPI_C_BOOL, mUpProc, 0,
+    MPI_Sendrecv(&board(height - 2, 0), width, MPI_CHAR, mDownProc, 0,
+        &board(0, 0), width, MPI_CHAR, mUpProc, 0,
         mCommunicator, MPI_STATUS_IGNORE);
-    MPI_Sendrecv(&board(1, 0), width, MPI_C_BOOL, mUpProc, 0,
-        &board(height - 1, 0), width, MPI_C_BOOL, mDownProc, 0,
+    MPI_Sendrecv(&board(1, 0), width, MPI_CHAR, mUpProc, 0,
+        &board(height - 1, 0), width, MPI_CHAR, mDownProc, 0,
         mCommunicator, MPI_STATUS_IGNORE);
 }
 
 void MPIGLProcess::setColumnType()
 {
-    Matrix<bool>* board = mProcess->getBoardPtr();
-    int boardWidth = board->cols();
-    int boardHeight = board->rows();
+    Matrix<char>* board = mProcess->getBoardPtr();
+    int width = board->cols();
+    int height = board->rows();
 
-    MPI_Type_vector(boardHeight, 1, boardWidth,
-        MPI_C_BOOL, &mColumnType);
+    MPI_Type_vector(height, 1, width,
+        MPI_CHAR, &mColumnType);
     MPI_Type_commit(&mColumnType);
 }
 

@@ -39,9 +39,10 @@ public:
     void syncData();
 
     virtual void processData() {
-        ProcessDecorator::processData();
 
         syncData();
+
+        ProcessDecorator::processData();
     }
 
     virtual MPIGLProcess* clone() {

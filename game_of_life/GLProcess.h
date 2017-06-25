@@ -7,8 +7,8 @@ class GLProcess :
     public Process
 {
 private:
-    Matrix<bool>* mBoardBuff = NULL;
-    Matrix<bool>* mBoard = NULL;
+    Matrix<char>* mBoardBuff = NULL;
+    Matrix<char>* mBoard = NULL;
 
 public:
     ~GLProcess() {
@@ -16,7 +16,7 @@ public:
         deleteObject(mBoardBuff);
     }
 
-    void setBoard(Matrix<bool>& board);
+    void setBoard(Matrix<char>& board);
 
     virtual void processData();
 
@@ -28,9 +28,9 @@ public:
         return new GLProcess();
     }
 
-    Matrix<bool>* getBoard();
+    Matrix<char>* getBoard();
 
-    Matrix<bool>* getBoardPtr() {
+    Matrix<char>* getBoardPtr() {
         return mBoard;
     }
 };

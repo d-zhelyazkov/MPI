@@ -4,11 +4,13 @@
 
 using std::string;
 
+#define ITER_NOTIFICATION 100
+
 void checkARGV(int argc, char **argv);
 
-Matrix<bool>* convertToBool(Matrix<char>& matrix);
+Matrix<char>* convertToBool(Matrix<char>& matrix);
 
-Matrix<char>* convertToChar(Matrix<bool>& matrix);
+Matrix<char>* convertToChar(Matrix<char>& matrix);
 
 Matrix<char>* readFile(string& fileName);
 
