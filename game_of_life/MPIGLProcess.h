@@ -27,6 +27,7 @@ private:
     MPI_Request mGuiRequest;
     bool mGuiRequestBuf;
     MPI_Request mGuiSendRequest;
+
 public:
     MPIGLProcess(GLProcess& process, string& inputFile, string& outputFile, MPI_Comm& communicator) :
         ProcessDecorator(process),

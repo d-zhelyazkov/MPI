@@ -11,6 +11,7 @@ void GUIProcess::initialize()
     processes--;
 
     mProcesses.resize(processes);
+    mRecvRequests.resize(processes);
 
     int globalWidth = 0;
     int globalHeight = 0;
@@ -49,12 +50,8 @@ void GUIProcess::processData()
     SDL_Event e;
     do {
         int dataReceived = true;
-        for (WorkProcDescriptor& process : mProcesses) {
-            MPI_Test(&process.recvRequest, &dataReceived, MPI_STATUS_IGNORE);
-            if (!dataReceived) {
-                break;
-            }
-        }
+        MPI_Testall(mRecvRequests.size(), &mRecvRequests[0],
+            &dataReceived, MPI_STATUSES_IGNORE);
 
         //printf("GUI: All data collected.\n");
         if (dataReceived) {
@@ -93,7 +90,7 @@ void GUIProcess::sendDataRequests()
     for (WorkProcDescriptor& process : mProcesses) {
         Matrix<char>& board = *process.board;
         MPI_Irecv(board.ptr(), board.size(), MPI_CHAR,
-            process.rank, 0, MPI_COMM_WORLD, &process.recvRequest);
+            process.rank, 0, MPI_COMM_WORLD, &mRecvRequests[process.rank]);
     }
 }
 

@@ -16,7 +16,6 @@ private:
         int Y;
         Matrix<char>* board = NULL;
         MPI_Request request;
-        MPI_Request recvRequest;
 
         ~WorkProcDescriptor() {
             deleteObject(board);
@@ -24,6 +23,7 @@ private:
     };
 
     std::vector<WorkProcDescriptor> mProcesses;
+    std::vector<MPI_Request> mRecvRequests;
 
     SDL_Window* mSDLWindow = NULL;
     SDL_Renderer* mSDLRenderer = NULL;
