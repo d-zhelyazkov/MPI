@@ -26,7 +26,7 @@ public:
     }
 };
 
-class ProcessMethodTimeTracker : public TimeTracker{
+class ProcessMethodTimeTracker : public TimeTracker {
 private:
     Process* mProcess = NULL;
     void(Process::*mTrackedMethod)();
@@ -36,9 +36,9 @@ public:
     ProcessMethodTimeTracker(
         Process* process,
         void (Process::*trackedMethod)(),
-        TimeProvider* timeProvider) :
+        TimeProvider* timeProvider)
 
-        mProcess(process) ,
+        : mProcess(process) ,
         mTrackedMethod(trackedMethod) {
         
         mTimeProvider = timeProvider->clone();

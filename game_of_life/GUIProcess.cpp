@@ -33,7 +33,8 @@ void GUIProcess::initialize()
         globalHeight = std::max(globalHeight, height + mProcesses[i].Y);
     }
 
-    mSDLWindow = SDL_CreateWindow("Game of Life",
+    mSDLWindow = SDL_CreateWindow(
+        "Game of Life",
         SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
         globalWidth, globalHeight,
         SDL_WINDOW_SHOWN
