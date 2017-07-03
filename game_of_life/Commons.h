@@ -5,6 +5,9 @@
 using std::string;
 
 #define ITER_NOTIFICATION 100
+#define GUI_PROPS 4
+
+#define DIMS 2
 
 void checkARGV(int argc, char **argv);
 

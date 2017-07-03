@@ -12,13 +12,15 @@ private:
     unsigned mCols = 0;
 
 public:
-    Matrix(unsigned rows, unsigned cols) : mRows(rows), mCols(cols) {
-        mArray = calloc<T>(size());
+    Matrix(unsigned rows, unsigned cols) {
+        reallocate(rows, cols);
     }
     
     Matrix(Matrix<T>& matrix) {
         *this = matrix;
     }
+
+    Matrix() {}
 
     ~Matrix() {
         deleteArray(mArray);
@@ -32,14 +34,11 @@ public:
 
     Matrix<T>& operator=(Matrix<T>& matrix) {
         unsigned oldSize = size();
-        mRows = matrix.mRows;
-        mCols = matrix.mCols;
-
         unsigned newSize = matrix.size();
         if (oldSize != newSize) {
-            deleteArray(mArray);
-            mArray = calloc<T>(newSize);
+            reallocate(matrix.rows(), matrix.cols());
         }
+
         copyArray(mArray, matrix.mArray, newSize);
 
         return *this;
@@ -64,6 +63,15 @@ public:
     //unsafe
     T* getRowPtr(unsigned row) {
         return &mArray[row * mCols];
+    }
+
+    void reallocate(unsigned rows, unsigned cols) {
+        mRows = rows;
+        mCols = cols;
+
+        deleteArray(mArray);
+        mArray = calloc<T>(size());
+
     }
 
 private:

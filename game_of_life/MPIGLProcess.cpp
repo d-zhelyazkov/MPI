@@ -64,7 +64,17 @@ void MPIGLProcess::initialize()
     Matrix<char>& localBoard = *convertToBool(inputBoard);
     mProcess->setBoard(localBoard);
 
-    setColumnType();
+    setMPIDatatypes();
+
+    int processes;
+    MPI_Comm_size(MPI_COMM_WORLD, &processes);
+    mGuiProc = processes - 1;
+
+    int guiInfo[GUI_PROPS] = 
+        {widthOffset, heightOffset, localWidth, localHeight};
+    MPI_Isend(guiInfo, GUI_PROPS, MPI_INT,
+        mGuiProc, 0, MPI_COMM_WORLD, &mGuiSendRequest);
+    setGuiRequestWait();
 
     MPI_Type_free(&fileView);
 
@@ -105,6 +115,7 @@ void MPIGLProcess::finalize()
 
     MPI_Type_free(&fileView);
     MPI_Type_free(&mColumnType);
+    MPI_Type_free(&mMatrixType);
 
     deleteObject(outBoard);
     deleteObject(localBoard);
@@ -129,9 +140,20 @@ void MPIGLProcess::syncData()
     MPI_Sendrecv(&board(1, 0), width, MPI_CHAR, mUpProc, 0,
         &board(height - 1, 0), width, MPI_CHAR, mDownProc, 0,
         mCommunicator, MPI_STATUS_IGNORE);
+
+    int flag;
+    MPI_Test(&mGuiRequest, &flag, MPI_STATUS_IGNORE);
+    if (!flag) {
+        return;
+    }
+
+    MPI_Isend(&board(1, 1), 1, mMatrixType,
+        mGuiProc, 0, MPI_COMM_WORLD, &mGuiSendRequest);
+
+    setGuiRequestWait();
 }
 
-void MPIGLProcess::setColumnType()
+void MPIGLProcess::setMPIDatatypes()
 {
     Matrix<char>* board = mProcess->getBoardPtr();
     int width = board->cols();
@@ -140,6 +162,16 @@ void MPIGLProcess::setColumnType()
     MPI_Type_vector(height, 1, width,
         MPI_CHAR, &mColumnType);
     MPI_Type_commit(&mColumnType);
+
+    MPI_Type_vector(height - 2, width - 2, width,
+        MPI_CHAR, &mMatrixType);
+    MPI_Type_commit(&mMatrixType);
+}
+
+void MPIGLProcess::setGuiRequestWait()
+{
+    MPI_Irecv(&mGuiRequestBuf, 1, MPI_C_BOOL,
+        mGuiProc, 0, MPI_COMM_WORLD, &mGuiRequest);
 }
 
 void appendNewlines(Matrix<char>*& matrix) {
