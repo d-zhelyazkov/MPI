@@ -3,6 +3,7 @@
 #include "../tools/MainProcess.h"
 #include <string.h>
 #include "Commons.h"
+#include "../tools/MPITimeProvider.h"
 
 int main(int argc, char **argv)
 {
@@ -32,7 +33,8 @@ int main(int argc, char **argv)
         string& outputFile = *getOutputFileName(argv[1], iterations, "parallel");
         MainImgReconstructProcess rootProcess(communicator, rank, prevRank, nextRank,
             baseProcess, inputFile, outputFile);
-        process = new MainProcess(rootProcess);
+        MPITimeProvider timeProvider;
+        process = new MainProcess(rootProcess, &timeProvider);
         delete &outputFile;
     }   
     else {

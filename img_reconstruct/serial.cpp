@@ -5,6 +5,7 @@
 #include "../tools/Tools.h"
 #include "../tools/MainProcess.h"
 #include "SerialImgReconstructProcess.h"
+#include "../tools/CTimeProvider.h"
 
 int main (int argc, char **argv)
 {
@@ -17,7 +18,8 @@ int main (int argc, char **argv)
 
     ImgReconstructProcess imgReconstructProcess;
     SerialImgReconstructProcess serialImgReconstructProcess(imgReconstructProcess, inputFile, *outputFile);
-    MainProcess mainProcess(serialImgReconstructProcess);
+    CTimeProvider timeProvider;
+    MainProcess mainProcess(serialImgReconstructProcess, &timeProvider);
     mainProcess.initialize();
     for (int k = 1; k <= iterations; k++) {
         mainProcess.processData();

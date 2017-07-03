@@ -3,6 +3,7 @@
 #include "MPIGLProcess.h"
 #include "GLProcess.h"
 #include "../tools/MainProcess.h"
+#include "../tools/MPITimeProvider.h"
 
 void WorkProcess::initialize() {
 
@@ -22,7 +23,8 @@ void WorkProcess::initialize() {
         mProcess = mpiProcess;
     }
     else {
-        mProcess = new MainProcess(*mpiProcess, ITER_NOTIFICATION);
+        MPITimeProvider timeProvider;
+        mProcess = new MainProcess(*mpiProcess, ITER_NOTIFICATION, &timeProvider);
         deleteObject(mpiProcess);
     }
 

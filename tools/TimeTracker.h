@@ -1,8 +1,8 @@
 #pragma once
 #include "ProcessDecorator.h"
-#include <time.h>
 #include "Tools.h"
 #include <vector>
+#include "TimeProvider.h"
 
 using std::vector;
 
@@ -30,11 +30,23 @@ class ProcessMethodTimeTracker : public TimeTracker{
 private:
     Process* mProcess = NULL;
     void(Process::*mTrackedMethod)();
+    TimeProvider* mTimeProvider;
 
 public:
-    ProcessMethodTimeTracker(Process* process, void (Process::*trackedMethod)()) :
+    ProcessMethodTimeTracker(
+        Process* process,
+        void (Process::*trackedMethod)(),
+        TimeProvider* timeProvider) :
+
         mProcess(process) ,
-        mTrackedMethod(trackedMethod) {}
+        mTrackedMethod(trackedMethod) {
+        
+        mTimeProvider = timeProvider->clone();
+    }
+
+    ~ProcessMethodTimeTracker() {
+        deleteObject(mTimeProvider);
+    }
 
     void callFunction();
 
@@ -48,14 +60,19 @@ class ProcessTimeTracker :
 {
 protected:
     vector<ProcessMethodTimeTracker*> mTrackers = vector<ProcessMethodTimeTracker*>(ProcessTrackerType::SYS_CNT);
+    TimeProvider* mTimeProvider;
 
 public:
-    ProcessTimeTracker(Process& process) : ProcessDecorator(process) {
+    ProcessTimeTracker(Process& process, TimeProvider* timeProvider)
+        : ProcessDecorator(process) {
+
+        mTimeProvider = timeProvider->clone();
         init();
     };
 
     ProcessTimeTracker(ProcessTimeTracker& processTracker) :
-        ProcessDecorator(processTracker) {
+        ProcessDecorator(processTracker),
+        mTimeProvider(processTracker.mTimeProvider) {
 
         init();
     }

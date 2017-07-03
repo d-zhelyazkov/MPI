@@ -3,17 +3,20 @@
 void ProcessMethodTimeTracker::callFunction()
 {
 
-    clock_t begin = clock();
+    double begin = mTimeProvider->getTime();
     (mProcess->*mTrackedMethod)();
-    clock_t time = clock() - begin;
+    double time = mTimeProvider->getTime() - begin;
 
-    mTotalTime += (double)time / CLOCKS_PER_SEC;
+    mTotalTime += time;
     mCalls++;
 }
 
 void ProcessTimeTracker::init()
 {
-    mTrackers[INITIALIZATION] = new ProcessMethodTimeTracker(mBaseProcess, &Process::initialize);
-    mTrackers[PROCESSING] = new ProcessMethodTimeTracker(mBaseProcess, &Process::processData);
-    mTrackers[FINALIZATION] = new ProcessMethodTimeTracker(mBaseProcess, &Process::finalize);
+    mTrackers[INITIALIZATION] = 
+        new ProcessMethodTimeTracker(mBaseProcess, &Process::initialize, mTimeProvider);
+    mTrackers[PROCESSING] = 
+        new ProcessMethodTimeTracker(mBaseProcess, &Process::processData, mTimeProvider);
+    mTrackers[FINALIZATION] = 
+        new ProcessMethodTimeTracker(mBaseProcess, &Process::finalize, mTimeProvider);
 }
