@@ -3,6 +3,7 @@
 #include <vector>
 #include <mpi.h>
 #include "../tools/Matrix.h"
+#include <SDL.h>
 
 
 class GUIProcess :
@@ -15,6 +16,7 @@ private:
         int Y;
         Matrix<char>* board = NULL;
         MPI_Request request;
+        MPI_Request recvRequest;
 
         ~WorkProcDescriptor() {
             deleteObject(board);
@@ -23,13 +25,16 @@ private:
 
     std::vector<WorkProcDescriptor> mProcesses;
 
+    SDL_Window* mSDLWindow = NULL;
+    SDL_Renderer* mSDLRenderer = NULL;
+
 public:
 
     void initialize();
 
     void processData();
 
-    void finalize() {}
+    void finalize();
 
     GUIProcess* clone() {
         return new GUIProcess();
