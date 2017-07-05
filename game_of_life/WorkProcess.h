@@ -2,6 +2,11 @@
 #include "../tools/Process.h"
 #include <mpi.h>
 
+/*
+* MPI Process that initializes MPIGLProcess 
+*   and executes iterations over it.
+* Executed only by a worker process.
+*/
 class WorkProcess :
     public Process
 {

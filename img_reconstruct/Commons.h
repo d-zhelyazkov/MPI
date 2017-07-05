@@ -10,5 +10,13 @@ void checkARGV(int argc, char **argv);
 
 string* getOutputFileName(char* inputFile, int iterations, const char* tag);
 
-void enchance(Matrix<float>& img);
+/*
+*  Find the max and min absolute values of the array
+*/
+float arrayAbsMin(float* arr, int N);
 
+float arrayAbsMax(float* arr, int N);
+
+void encahnceImg(float* img, int size, float min, float max, float thresh);
+
+void enchance(Matrix<float>& img);

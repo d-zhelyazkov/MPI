@@ -18,6 +18,7 @@ void GUIProcess::initialize()
 
     for (int i = 0; i < processes; i++) {
 
+        //receives a working process initial parameters
         int props[GUI_PROPS];
         MPI_Recv(props, GUI_PROPS, MPI_INT,
             i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
@@ -30,6 +31,7 @@ void GUIProcess::initialize()
         int height = props[3];
         mProcesses[i].board = new Matrix<char>(height, width);
 
+        //determines global pattern size
         globalWidth = std::max(globalWidth, width + mProcesses[i].X);
         globalHeight = std::max(globalHeight, height + mProcesses[i].Y);
     }
@@ -49,16 +51,17 @@ void GUIProcess::processData()
 {
     SDL_Event e;
     do {
+        //checks if all work processes have send their local data
         int dataReceived = true;
         MPI_Testall(mRecvRequests.size(), &mRecvRequests[0],
             &dataReceived, MPI_STATUSES_IGNORE);
 
-        //printf("GUI: All data collected.\n");
         if (dataReceived) {
-            // Clear winow
+            // Clear winow - black
             SDL_SetRenderDrawColor(mSDLRenderer, 0, 0, 0, 0);
             SDL_RenderClear(mSDLRenderer);
 
+            //white draw color
             SDL_SetRenderDrawColor(mSDLRenderer, 255, 255, 255, 0);
             for (WorkProcDescriptor& process : mProcesses) {
                 Matrix<char>& board = *process.board;
@@ -76,18 +79,21 @@ void GUIProcess::processData()
         }
 
         SDL_PollEvent(&e);
+    //until quit button has been clicked
     } while (e.type != SDL_QUIT);
 }
 
 void GUIProcess::sendDataRequests()
 {
     for (WorkProcDescriptor& process : mProcesses) {
+        //asynchronously sends data request to every work process
         bool buf;
         MPI_Isend(&buf, 1, MPI_C_BOOL,
             process.rank, 0, MPI_COMM_WORLD, &process.request);
     }
 
     for (WorkProcDescriptor& process : mProcesses) {
+        //asynchronously receives data from every work process
         Matrix<char>& board = *process.board;
         MPI_Irecv(board.ptr(), board.size(), MPI_CHAR,
             process.rank, 0, MPI_COMM_WORLD, &mRecvRequests[process.rank]);
@@ -95,9 +101,9 @@ void GUIProcess::sendDataRequests()
 }
 
 void GUIProcess::finalize() {
-    SDL_DestroyRenderer(mSDLRenderer);
-    SDL_DestroyWindow(mSDLWindow);
 
     // Clean up
+    SDL_DestroyRenderer(mSDLRenderer);
+    SDL_DestroyWindow(mSDLWindow);
     SDL_Quit();
 }

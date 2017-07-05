@@ -2,7 +2,9 @@
 #include "../tools/Process.h"
 #include "../tools/Matrix.h"
 
-
+/*
+* Process that executes Game of Life logic over a bool board. 
+*/
 class GLProcess :
     public Process
 {

@@ -5,6 +5,11 @@
 
 using std::string;
 
+/*
+* Simple GoL Process. Implements the following functionalities:
+*   - reads the pattern from the input file
+*   - writes the pattern to the output file
+*/
 class SerialGLProcess :
     public ProcessDecorator
 {

@@ -13,7 +13,7 @@ void deleteObject(T& obj) { delete &obj; }
 template <typename T>
 void deleteObjects(std::vector<T*>& objects)
 {
-    for (T* obj : objects)
+    for (T*& obj : objects)
         deleteObject(obj);
 }
 
@@ -35,12 +35,6 @@ void copyArray(T* dest, T* src, unsigned size) {
 }
 
 /*
-*  Find the max and min absolute values of the array
+* Computes the local part from global work for a current process(rank) of several processes.
 */
-float arrayAbsMin(float* arr, int N);
-
-float arrayAbsMax(float* arr, int N);
-
-void encahnceImg(float* img, int size, float min, float max, float thresh);
-
 void computeProcessWork(int processes, int rank, int globalWork, int& localWork, int& workOffset);

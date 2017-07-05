@@ -3,6 +3,9 @@
 #include <stdlib.h>
 #include "Tools.h"
 
+/*
+* Facade for a 2DArray
+*/
 template <typename T>
 class Matrix
 {

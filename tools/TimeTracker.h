@@ -6,6 +6,9 @@
 
 using std::vector;
 
+/*
+* Keeps a track of total time spend over several calls(iterations)
+*/
 class TimeTracker {
 protected:
     double mTotalTime = 0;
@@ -26,6 +29,9 @@ public:
     }
 };
 
+/*
+* Keeps a timing track of a process's method
+*/
 class ProcessMethodTimeTracker : public TimeTracker {
 private:
     Process* mProcess = NULL;
@@ -52,14 +58,16 @@ public:
 
 };
 
+enum ProcessMethod{INITIALIZATION, PROCESSING, FINALIZATION, SYS_CNT};
 
-enum ProcessTrackerType{INITIALIZATION, PROCESSING, FINALIZATION, SYS_CNT};
-
+/*
+* Keeps a time trackers of all Process methods. 
+*/
 class ProcessTimeTracker :
     public ProcessDecorator
 {
 protected:
-    vector<ProcessMethodTimeTracker*> mTrackers = vector<ProcessMethodTimeTracker*>(ProcessTrackerType::SYS_CNT);
+    vector<ProcessMethodTimeTracker*> mTrackers = vector<ProcessMethodTimeTracker*>(ProcessMethod::SYS_CNT);
     TimeProvider* mTimeProvider;
 
 public:
@@ -77,8 +85,8 @@ public:
         init();
     }
     
-    TimeTracker* getTracker(ProcessTrackerType trackerType) {
-        return new TimeTracker(*mTrackers[trackerType]);
+    TimeTracker* getTracker(ProcessMethod method) {
+        return new TimeTracker(*mTrackers[method]);
     }
 
     ~ProcessTimeTracker() {

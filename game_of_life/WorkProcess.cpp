@@ -23,6 +23,7 @@ void WorkProcess::initialize() {
         mProcess = mpiProcess;
     }
     else {
+        //the zero ranked process is the reporting one
         MPITimeProvider timeProvider;
         mProcess = new MainProcess(*mpiProcess, ITER_NOTIFICATION, &timeProvider);
         deleteObject(mpiProcess);

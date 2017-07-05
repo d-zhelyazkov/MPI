@@ -56,10 +56,10 @@ Matrix<char>* readFile(string& fileName) {
     }
 
     int rows, cols;
-    //fscanf(fp, "%d %d\n", &cols, &rows);
     parseWH(fileName, cols, rows);
     Matrix<char>* result = new Matrix<char>(rows, cols);
 
+    //two additional for the newline and termination chars
     int buffSize = cols + 2;
     char* buff = new char[buffSize];
     for (int i = 0; i < rows; i++) {
@@ -78,9 +78,7 @@ void writeFile(string& fileName, Matrix<char>& matrix) {
         printf("Cannot open file '%s'.", fileName.c_str());
         return;
     }
-
-    //fprintf(fp, "%d %d\n", matrix.cols(), matrix.rows());
-
+    
     int buffSize = matrix.cols() + 1;
     char* buff = new char[buffSize];
     buff[matrix.cols()] = 0;

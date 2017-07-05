@@ -2,6 +2,9 @@
 #include "Process.h"
 #include "Tools.h"
 
+/*
+* Decorator design pattern for objects of type Process 
+*/
 class ProcessDecorator : public Process
 {
 protected:

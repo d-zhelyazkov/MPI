@@ -6,6 +6,13 @@
 
 using std::string;
 
+/*
+* MPI Game of Life process. Implements the following functionalities:
+*   - sync data with other MPI GoL processes.
+*   - reads parallely the local pattern from the input file
+*   - writes parallely the local pattern in the output file
+*   - handles GUIProcess's requests asynchronously
+*/
 class MPIGLProcess :
     public ProcessDecorator
 {

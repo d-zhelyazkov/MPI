@@ -6,14 +6,25 @@
 #include <SDL.h>
 
 
+/*
+* GUI process that collects local boards of the worker processes 
+*   and displays them on a screen. 
+*/
 class GUIProcess :
     public Process
 {
 private:
+    /*
+    * Holder for data related to a single worker process.
+    */
     struct WorkProcDescriptor {
         int rank;
-        int X;
-        int Y;
+
+        /*
+        * The local board's screen position.
+        */
+        int X, Y;
+
         Matrix<char>* board = NULL;
         MPI_Request request;
 
@@ -41,6 +52,9 @@ public:
     }
 
 private:
+    /*
+    * Requests data from worker processes.
+    */
     void sendDataRequests();
 };
 

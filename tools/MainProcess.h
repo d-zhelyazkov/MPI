@@ -3,6 +3,9 @@
 
 #define ITER_DEF_NOTIFICATION 1000
 
+/*
+* Process that reports info in the command line.
+*/
 class MainProcess : public ProcessTimeTracker {
 
 private:

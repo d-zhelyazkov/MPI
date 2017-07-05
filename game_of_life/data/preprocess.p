@@ -2,7 +2,7 @@ use strict;
 
 my $F_CHAR = '.';
 my $LEFT_OFFSET = 10;
-my $leftOffsetStr = $F_CHAR x $LEFT_OFFSET;
+my $DOWN_OFFSET = 10;
 
 my $file = $ARGV[0];
 my $width = $ARGV[1];
@@ -17,26 +17,27 @@ open (my $output, ">", $outFile);
 #print $output "$width $height\n";
 
 my $lines = @data;
-my $blankLines = ($height - $lines) / 2;
+my $blankLines = $height - $lines - $DOWN_OFFSET;
 my $blankLine = ($F_CHAR x $width);
 for (1 .. $blankLines) {
-	print $output "$blankLine\n";
+    print $output "$blankLine\n";
 }
 
+my $leftOffsetStr = $F_CHAR x $LEFT_OFFSET;
 for my $line (@data) {
     $line =~ s/\R//g;
-	#$line =~ s/\./$F_CHAR/g;
-	#$line =~ s/O/#/g;
-	
-	my $lineLen = length($line);
-	my $blankReminder = $F_CHAR x ($width - $lineLen - $LEFT_OFFSET);
-	
-	#print "$lineLen " . length($blankReminder) . "\n"; 
-	print $output "$leftOffsetStr$line$blankReminder\n";
+    #$line =~ s/\./$F_CHAR/g;
+    #$line =~ s/O/#/g;
+    
+    my $lineLen = length($line);
+    my $blankReminder = $F_CHAR x ($width - $lineLen - $LEFT_OFFSET);
+    
+    #print "$lineLen " . length($blankReminder) . "\n"; 
+    print $output "$leftOffsetStr$line$blankReminder\n";
 }
 
-for (1 .. $blankLines) {
-	print $output "$blankLine\n";
+for (1 .. $DOWN_OFFSET) {
+    print $output "$blankLine\n";
 }
 
 
